@@ -2,7 +2,7 @@ import json,math,os
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei Mono', 'WenQuanYi Zen Hei Mono,']
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei Mono', 'WenQuanYi Zen Hei Mono']
 plt.rcParams['axes.unicode_minus'] = False
 
 # 获取脚本所在目录
@@ -97,7 +97,7 @@ def plot_comparison(radar_data, params):
     # 2. 计算全局最大值（为所有载具所有层次所有参数中的最大值）
     global_max = 0
     for vname in vehicle_names:
-        for level in ["高手", "一般玩家", "菜鸟"]:
+        for level in ["高手", "一般玩家", "菜鸟","综合"]:
             if level in radar_data[vname]:
                 vals = radar_data[vname][level].values()
                 if vals:
