@@ -1,9 +1,10 @@
 import json,math,os
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei Mono', 'WenQuanYi Zen Hei Mono,']
 plt.rcParams['axes.unicode_minus'] = False
+
 # 获取脚本所在目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,6 +20,7 @@ LEVEL_STYLES = {
     "高手": {"color": "#E74C3C", "linestyle": "-", "marker": "o", "label": "高手"},
     "一般玩家": {"color": "#2ECC71", "linestyle": "--", "marker": "s", "label": "一般玩家"},
     "菜鸟": {"color": "#3498DB", "linestyle": "-.", "marker": "^", "label": "菜鸟"},
+    "综合": {"color": "black", "linestyle": ":", "marker": "D", "label": "综合"},  # 新增
 }
 
 # 输出目录
@@ -61,7 +63,7 @@ def plot_single_vehicle(vehicle_name, vehicle_data, params):
     ax.set_yticklabels(['2', '4', '6', '8', '10'], fontsize=8, color='gray')
     # 计算当前车辆所有层次、所有参数的最大值
     all_vals = []
-    for level in ["高手", "一般玩家", "菜鸟"]:
+    for level in ["高手", "一般玩家", "菜鸟", "综合"]:
         if level in vehicle_data:
             all_vals.extend(vehicle_data[level].values())
     local_max = max(all_vals) if all_vals else 10
