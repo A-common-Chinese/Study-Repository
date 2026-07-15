@@ -2,7 +2,7 @@ import json,math,os
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei', 'DejaVu Sans']
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei Mono', 'WenQuanYi Zen Hei Mono,']
 plt.rcParams['axes.unicode_minus'] = False
 # 获取脚本所在目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
