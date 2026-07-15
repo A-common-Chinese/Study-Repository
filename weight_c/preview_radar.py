@@ -2,6 +2,8 @@ import json,math,os
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei', 'DejaVu Sans']
+plt.rcParams['axes.unicode_minus'] = False
 # 获取脚本所在目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -85,20 +87,22 @@ def plot_single_vehicle(vehicle_name, vehicle_data, params):
 
 # 绘制多车辆对比雷达图
 def plot_comparison(radar_data, params):
-    # 计算全局最大值
-    global_max = 0
-    for vname in vehicle_names:
-        if "高手" in radar_data[vname]:
-            global_max = max(global_max, max(radar_data[vname]["高手"].values()))
-        if "一般玩家" in radar_data[vname]:
-            global_max = max(global_max, max(radar_data[vname]["一般玩家"].values()))
-        if "菜鸟" in radar_data[vname]:
-            global_max = max(global_max, max(radar_data[vname]["菜鸟"].values()))
-    global_max = max(global_max * 1.1, 2)
+    # 1. 先提取所有载具名称
     vehicle_names = list(radar_data.keys())
     if len(vehicle_names) < 2:
         return
 
+    # 2. 计算全局最大值（为所有载具所有层次所有参数中的最大值）
+    global_max = 0
+    for vname in vehicle_names:
+        for level in ["高手", "一般玩家", "菜鸟"]:
+            if level in radar_data[vname]:
+                vals = radar_data[vname][level].values()
+                if vals:
+                    global_max = max(global_max, max(vals))
+    global_max = max(global_max * 1.1, 2)
+
+    # 3. 准备画图
     num_params = len(params)
     angles = np.linspace(0, 2 * math.pi, num_params, endpoint=False).tolist()
     angles += angles[:1]
@@ -120,7 +124,6 @@ def plot_comparison(radar_data, params):
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(params, fontsize=10)
         ax.set_ylim(0, global_max)
-        
         ax.legend(loc='upper right', bbox_to_anchor=(1.4, 1.1), fontsize=9)
 
     plt.tight_layout()
