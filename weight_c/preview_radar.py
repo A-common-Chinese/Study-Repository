@@ -12,12 +12,12 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CORE_PARAMS = [
     # 机动类
     "前进能力",
-    "倒车速度",
     "小范围综合机动性",
+    "倒车速度",
     # 防护类
     "防护面积",
-    "弱点分布",
     "生存性",
+    "弱点分布",
     # 火力类
     "穿深",
     "装填",
@@ -116,6 +116,7 @@ def plot_single_vehicle(vehicle_name, vehicle_data, params):
     print(f"已生成: {filename}")
     plt.close()
 
+'''
 # 绘制多车辆对比雷达图
 def plot_comparison(radar_data, params):
     # 1. 先提取所有载具名称
@@ -181,14 +182,15 @@ def plot_comparison(radar_data, params):
     plt.savefig(filename, dpi=150, bbox_inches='tight')
     print(f"已生成对比图: {filename}")
     plt.close()
+'''
 
 if __name__ == "__main__":
     radar_data = load_radar_data()
 
     for vehicle_name, vdata in radar_data.items():
         plot_single_vehicle(vehicle_name, vdata, CORE_PARAMS)
-
+    '''
     if len(radar_data) >= 2:
         plot_comparison(radar_data, CORE_PARAMS)
-
+    '''
     print("所有预览图生成完毕！")
