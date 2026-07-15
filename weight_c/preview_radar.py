@@ -109,10 +109,10 @@ def plot_comparison(radar_data, params):
     angles = np.linspace(0, 2 * math.pi, num_params, endpoint=False).tolist()
     angles += angles[:1]
 
-    fig, axes = plt.subplots(1, 3, figsize=(24, 8), subplot_kw=dict(polar=True))
-    fig.suptitle("多车载具三层视角对比", fontsize=20, y=1.02)
+    fig, axes = plt.subplots(1, 4, figsize=(32, 8), subplot_kw=dict(polar=True))        # 欲增加图表数量，请修改此处
+    fig.suptitle("多车载具多层视角对比", fontsize=20, y=1.02)
 
-    for idx, level in enumerate(["高手", "一般玩家", "菜鸟"]):
+    for idx, level in enumerate(["高手", "一般玩家", "菜鸟","综合"]):
         ax = axes[idx]
         ax.set_title(level, fontsize=16, pad=20)
         for v_name in vehicle_names:
