@@ -10,11 +10,20 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 核心参数顺序（必须与雷达数据中的键一致）
 CORE_PARAMS = [
-    "装填", "前进能力", "倒车速度", "双机响应速度",
-    "防护面积", "弱点分布", "生存性", "小范围综合机动性",
-    "穿深", "辅助设备"
+    # 机动类
+    "前进能力",
+    "倒车速度",
+    "小范围综合机动性",
+    # 防护类
+    "防护面积",
+    "弱点分布",
+    "生存性",
+    # 火力类
+    "穿深",
+    "装填",
+    "双机响应速度",
+    "辅助设备"
 ]
-
 # 玩家层次样式
 LEVEL_STYLES = {
     "高手": {"color": "#E74C3C", "linestyle": "-", "marker": "o", "label": "高手"},
@@ -26,7 +35,7 @@ LEVEL_STYLES = {
 # 输出目录
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
 
-# 加载雷达数据
+# 加载雷达图数据
 def load_radar_data():
     file_path = os.path.join(SCRIPT_DIR, "radar_data.json")
     with open(file_path, "r", encoding="utf-8") as f:
@@ -39,7 +48,7 @@ def plot_single_vehicle(vehicle_name, vehicle_data, params):
     angles += angles[:1]  # 闭合
 
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
-    fig.suptitle(f"{vehicle_name} 三层视角雷达图", fontsize=18, y=0.95)
+    fig.suptitle(f"{vehicle_name} 玩家适配度雷达图", fontsize=18, y=0.95)
 
     for level, style in LEVEL_STYLES.items():
         if level not in vehicle_data:
@@ -79,6 +88,26 @@ def plot_single_vehicle(vehicle_name, vehicle_data, params):
                 bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
     ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=12)
+
+    # 定义三个区域的参数索引范围（与 CORE_PARAMS 顺序对应）
+    categories = [
+        ("机动", 0, 3),   # 前进, 倒车, 小范围机动
+        ("防护", 3, 6),   # 防护面积, 弱点分布, 生存性
+        ("火力", 6, 10)   # 穿深, 装填, 双机响应, 辅助设备
+    ]
+
+    for label, start, end in categories:
+        # 计算该区域中心角度（取起始和结束轴的中间角度）
+        angle_start = angles[start]
+        angle_end = angles[end - 1] if end > start else angles[start]
+        if angle_end < angle_start:
+            angle_end += 2 * np.pi
+        mid_angle = (angle_start + angle_end) / 2
+        # 欲修改文字距离中心的距离，请修改 text_radius 的系数
+        text_radius = local_max * 0.5
+        ax.text(mid_angle, text_radius, label, ha='center', va='center', 
+                fontsize=14, fontweight='bold', color='grey', alpha=0.6)
+        
     plt.tight_layout()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -126,6 +155,25 @@ def plot_comparison(radar_data, params):
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(params, fontsize=10)
         ax.set_ylim(0, global_max)
+        # 定义三个区域的参数索引范围
+        categories = [
+            ("机动", 0, 3),   # 前进, 倒车, 小范围机动
+            ("防护", 3, 6),   # 防护面积, 弱点分布, 生存性
+            ("火力", 6, 10)   # 穿深, 装填, 双机响应, 辅助设备
+        ]
+
+        for label, start, end in categories:
+            # 计算该区域中心角度
+            angle_start = angles[start]
+            angle_end = angles[end - 1] if end > start else angles[start]
+            if angle_end < angle_start:
+                angle_end += 2 * np.pi
+            mid_angle = (angle_start + angle_end) / 2
+            # 欲修改文字距离中心的距离，请修改 text_radius 的系数
+            text_radius = global_max * 0.5
+            ax.text(mid_angle, text_radius, label, ha='center', va='center', 
+                    fontsize=14, fontweight='bold', color='grey', alpha=0.6)
+            
         ax.legend(loc='upper right', bbox_to_anchor=(1.4, 1.1), fontsize=9)
 
     plt.tight_layout()
