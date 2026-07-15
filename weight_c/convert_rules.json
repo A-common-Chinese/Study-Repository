@@ -1,0 +1,80 @@
+{
+  "装填时间_s": {
+    "type": "lower_better_sigmoid",
+    "center": 6.0,
+    "scale": 1.5
+  },
+  "前进赛道时间_s": {
+    "type": "lower_better_sigmoid",
+    "center": 95.0,
+    "scale": 8.0
+  },
+  "倒车极速_kmh": {
+    "type": "higher_better_linear",
+    "best": 50,
+    "worst": 0
+  },
+  "方向机转速": {
+    "type": "higher_better_sigmoid",
+    "center": 30,
+    "scale": 8
+  },
+  "高低机转速": {
+    "type": "higher_better_sigmoid",
+    "center": 20,
+    "scale": 6
+  },
+  "弱区占比": {
+    "type": "custom"
+  },
+  "车体投影面积": {
+    "type": "custom"
+  },
+  "弱点聚落数": {
+    "type": "custom"
+  },
+  "离散度修正": {
+    "type": "raw"
+  },
+  "形状加分": {
+    "type": "raw"
+  },
+  "生存性_被穿后存活率": {
+    "type": "higher_better_linear",
+    "best": 1.0,
+    "worst": 0.0
+  },
+  "绕桩时间_s": {
+    "type": "lower_better_sigmoid",
+    "center": 20,
+    "scale": 4
+  },
+  "原地转向时间_s": {
+    "type": "lower_better_sigmoid",
+    "center": 10,
+    "scale": 2.5
+  },
+  "急弯加减速时间_s": {
+    "type": "lower_better_sigmoid",
+    "center": 16,
+    "scale": 3
+  },
+  "穿深": {
+    "type": "higher_better_linear",
+    "best": 700,
+    "worst": 500
+  },
+  "辅助设备档次": {
+    "type": "categorical",
+    "mapping": {"最好": 10, "好": 8, "够用": 6, "差": 2}
+  },
+  "俯角_度": {
+    "type": "raw"
+  },
+  "APS": {
+    "type": "raw"
+  },
+  "LWS": {
+    "type": "raw"
+  }
+}
