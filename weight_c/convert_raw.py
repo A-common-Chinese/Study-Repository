@@ -38,16 +38,16 @@ def main():
         q['前进能力'] = apply_rule(props, rules, '前进赛道时间_s')
         q['倒车速度'] = apply_rule(props, rules, '倒车极速_kmh')
 
-        # 双机响应速度：取方向机和高低机的平均得分
+        # 双机响应速度：取方向机和高低机的加权平均得分
         turret_score = apply_rule(props, rules, '方向机转速')
         elevation_score = apply_rule(props, rules, '高低机转速')
-        q['双机响应速度'] = round((turret_score + elevation_score) / 2, 2)
+        q['双机响应速度'] = math.sqrt(1.5 * turret_score * elevation_score * 0.8)
 
         # 防护面积：结合弱区占比和车体投影面积
         r = props['弱区占比']
         a = props['车体投影面积']
-        # 之前讨论的公式：得分 = 10 * (1 - r*a)^2，拥抱极端
-        q['防护面积'] = round(10 * (1 - r * a) ** 2, 2)
+        # 得分 = 20 * (1 - r*a)^2，拥抱极端
+        q['防护面积'] = round(15 * (1 - r * a) ** 2, 2)
 
         # 弱点分布：聚落数+离散度修正+形状加分，然后映射到0-10
         clusters = props['弱点聚落数']
@@ -63,7 +63,7 @@ def main():
         slalom = apply_rule(props, rules, '绕桩时间_s')
         turn = apply_rule(props, rules, '原地转向时间_s')
         acc_brake = apply_rule(props, rules, '急弯加减速时间_s')
-        q['小范围综合机动性'] = round(0.5*slalom + 0.3*turn + 0.2*acc_brake, 2)
+        q['小范围综合机动性'] = round(0.2*slalom + 0.3*turn + 0.5*acc_brake, 2)
 
         # 穿深
         q['穿深'] = apply_rule(props, rules, '穿深')
