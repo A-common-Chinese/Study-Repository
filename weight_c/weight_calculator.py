@@ -1,209 +1,194 @@
-import json,os,math
+import json,math,os
+import numpy as np
+import matplotlib.pyplot as plt
 
-# 获取脚本所在的目录
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei Mono', 'WenQuanYi Zen Hei Mono']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 获取脚本所在目录
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def create_dict(file_name="weights.json"):
-    # 拼接出与脚本同目录的文件完整路径
-    file_path = os.path.join(SCRIPT_DIR, file_name)
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    return data
+# 核心参数顺序（必须与雷达数据中的键一致）
+CORE_PARAMS = [
+    # 机动类
+    "前进能力",
+    "倒车速度",
+    "小范围综合机动性",
+    # 防护类
+    "防护面积",
+    "弱点分布",
+    "生存性",
+    # 火力类
+    "穿深",
+    "装填",
+    "双机响应速度",
+    "辅助设备"
+]
+# 玩家层次样式
+LEVEL_STYLES = {
+    "高手": {"color": "#E74C3C", "linestyle": "-", "marker": "o", "label": "高手"},
+    "一般玩家": {"color": "#2ECC71", "linestyle": "--", "marker": "s", "label": "一般玩家"},
+    "菜鸟": {"color": "#3498DB", "linestyle": "-.", "marker": "^", "label": "菜鸟"},
+    "综合": {"color": "black", "linestyle": ":", "marker": "D", "label": "综合"},  # 新增
+}
 
-# 如果 weights.json 不存在，自动创建一个示例文件
-def ensure_weights_exist(file_name="weights.json"):
-    file_path = os.path.join(SCRIPT_DIR, file_name)
-    if not os.path.exists(file_path):
-        sample_data = {
-            "发挥系数": {
-                "高手": {"穿深": 1, "装填": 2, "辅助设备": 1, "双机响应速度": 2,
-                        "弱点分布": 1, "防护面积": 1, "生存性": 2, "倒车速度": 2,
-                        "前进能力": 2, "小范围综合机动性": 2},
-                "一般玩家": {"穿深": 1, "装填": 1, "辅助设备": 1, "双机响应速度": 1,
-                          "弱点分布": 1, "防护面积": 1, "生存性": 1, "倒车速度": 1,
-                          "前进能力": 1, "小范围综合机动性": 1},
-                "菜鸟": {"穿深": 1, "装填": 0.5, "辅助设备": 0.5, "双机响应速度": 0.5,
-                        "弱点分布": 0.5, "防护面积": 1, "生存性": 0.5, "倒车速度": 0.5,
-                        "前进能力": 0.5, "小范围综合机动性": 0.5}
-            },
-            "依赖系数": {
-                "高手": {"穿深": 0.5, "装填": 0.5, "辅助设备": 0.5, "双机响应速度": 0.5,
-                        "弱点分布": 0.5, "防护面积": 0.5, "生存性": 1, "倒车速度": 1,
-                        "前进能力": 2, "小范围综合机动性": 2},
-                "一般玩家": {"穿深": 1, "装填": 1, "辅助设备": 1, "双机响应速度": 1,
-                          "弱点分布": 1, "防护面积": 1, "生存性": 1, "倒车速度": 1,
-                          "前进能力": 1, "小范围综合机动性": 2},
-                "菜鸟": {"穿深": 2, "装填": 2, "辅助设备": 2, "双机响应速度": 2,
-                        "弱点分布": 2, "防护面积": 2, "生存性": 2, "倒车速度": 2,
-                        "前进能力": 0.5, "小范围综合机动性": 0.5}
-            }
-        }
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(sample_data, f, ensure_ascii=False, indent=2)
-        print(f"已自动创建示例文件：{file_path}")
+# 输出目录
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
 
-# 如果 vehicles_quantified.json 不存在，自动创建一个示例文件
-def ensure_vehicles_exist(file_name="vehicles_quantified.json"):
-    file_path = os.path.join(SCRIPT_DIR, file_name)
-    if not os.path.exists(file_path):
-        sample_data = {
-            "T-90M": {
-                "装填": 3.8,
-                "前进能力": 6.2,
-                "倒车速度": 2.0,
-                "双机响应速度": 6.5,
-                "防护面积": 8.0,
-                "弱点分布": 7.5,
-                "生存性": 6.0,
-                "小范围综合机动性": 5.5,
-                "穿深": 6.0,
-                "辅助设备": 10,
-                "俯角": 3.0,
-                "APS": 0.0,
-                "LWS": 0.0
-            },
-            "ZTZ99A": {
-                "装填": 3.8,
-                "前进能力": 9.5,
-                "倒车速度": 9.5,
-                "双机响应速度": 7.5,
-                "防护面积": 5.0,
-                "弱点分布": 7.5,
-                "生存性": 4.0,
-                "小范围综合机动性": 7.5,
-                "穿深": 5.9,
-                "辅助设备": 10,
-                "俯角": 3.2,
-                "APS": 0.0,
-                "LWS": 0.0
-            },
-            "M1A2SEP": {
-                "装填": 8.0,
-                "前进能力": 9.5,
-                "倒车速度": 8.0,
-                "双机响应速度": 8.5,
-                "防护面积": 5.0,
-                "弱点分布": 7.5,
-                "生存性": 7.0,
-                "小范围综合机动性": 9.0,
-                "穿深": 9.0,
-                "辅助设备": 10,
-                "俯角": 8.0,
-                "APS": 0.0,
-                "LWS": 0.0
-            }
-        }
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(sample_data, f, ensure_ascii=False, indent=2)
-        print(f"已自动创建示例文件：{file_path}")
+# 加载雷达图数据
+def load_radar_data():
+    file_path = os.path.join(SCRIPT_DIR, "radar_data.json")
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-def print_weight_data(data, max_depth=None, indent=0):
-    #max_depth 控制最大深度，indent 控制缩进
-    if max_depth is not None and max_depth <= 0:
+# 绘制单个车辆的雷达图
+def plot_single_vehicle(vehicle_name, vehicle_data, params):
+    num_params = len(params)
+    angles = np.linspace(0, 2 * math.pi, num_params, endpoint=False).tolist()
+    angles += angles[:1]  # 闭合
+
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
+    fig.suptitle(f"{vehicle_name} 玩家适配度雷达图", fontsize=18, y=0.95)
+
+    for level, style in LEVEL_STYLES.items():
+        if level not in vehicle_data:
+            continue
+        values_dict = vehicle_data[level]
+        values = [values_dict.get(p, 0) for p in params]
+        values += values[:1]
+        ax.plot(angles, values,
+                color=style["color"],
+                linestyle=style["linestyle"],
+                marker=style["marker"],
+                linewidth=2,
+                markersize=6,
+                label=style["label"])
+        ax.fill(angles, values, color=style["color"], alpha=0.05)
+
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(params, fontsize=12)
+    ax.set_rlabel_position(30)
+    ax.set_yticks([2, 4, 6, 8, 10])
+    ax.set_yticklabels(['2', '4', '6', '8', '10'], fontsize=8, color='gray')
+    # 计算当前车辆所有层次、所有参数的最大值
+    all_vals = []
+    for level in ["高手", "一般玩家", "菜鸟", "综合"]:
+        if level in vehicle_data:
+            all_vals.extend(vehicle_data[level].values())
+    local_max = max(all_vals) if all_vals else 10
+    # 设置上限为局部最大值的 1.1 倍，并至少为 2 避免空图
+    ax.set_ylim(0, max(local_max * 1.1, 2))
+
+    # 加减分项
+    bonuses = vehicle_data.get("加减分", {})
+    if bonuses:
+        bonus_text = " | ".join([f"{k}: {v:+.1f}" for k, v in bonuses.items()])
+        ax.text(0.5, -0.15, f"加减分项: {bonus_text}",
+                transform=ax.transAxes, ha='center', fontsize=10,
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+    ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize=12)
+
+    # 定义三个区域的参数索引范围（与 CORE_PARAMS 顺序对应）
+    categories = [
+        ("机动", 0, 3),   # 前进, 倒车, 小范围机动
+        ("防护", 3, 6),   # 防护面积, 弱点分布, 生存性
+        ("火力", 6, 10)   # 穿深, 装填, 双机响应, 辅助设备
+    ]
+
+    for label, start, end in categories:
+        # 计算该区域中心角度（取起始和结束轴的中间角度）
+        angle_start = angles[start]
+        angle_end = angles[end - 1] if end > start else angles[start]
+        if angle_end < angle_start:
+            angle_end += 2 * np.pi
+        mid_angle = (angle_start + angle_end) / 2
+        # 欲修改文字距离中心的距离，请修改 text_radius 的系数
+        text_radius = local_max * 0.5
+        ax.text(mid_angle, text_radius, label, ha='center', va='center', 
+                fontsize=14, fontweight='bold', color='grey', alpha=0.6)
+        
+    plt.tight_layout()
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    filename = os.path.join(OUTPUT_DIR, f"{vehicle_name}_雷达图.png")
+    plt.savefig(filename, dpi=150, bbox_inches='tight')
+    print(f"已生成: {filename}")
+    plt.close()
+
+# 绘制多车辆对比雷达图
+def plot_comparison(radar_data, params):
+    # 1. 先提取所有载具名称
+    vehicle_names = list(radar_data.keys())
+    if len(vehicle_names) < 2:
         return
-    if isinstance(data, dict):
-        for key, value in data.items():
-            print("  " * indent + str(key), end="")
-            if isinstance(value, dict):
-                print()                     # 换行，展开下一层
-                print_weight_data(value, 
-                                  max_depth - 1 if max_depth else None, 
-                                  indent + 1)
-            else:
-                print(f" : {value}")        # 遍历到最底层,打印值
-    else:
-        print("  " * indent + str(data))
 
-# 主程序
+    # 2. 计算全局最大值（为所有载具所有层次所有参数中的最大值）
+    global_max = 0
+    for vname in vehicle_names:
+        for level in ["高手", "一般玩家", "菜鸟","综合"]:
+            if level in radar_data[vname]:
+                vals = radar_data[vname][level].values()
+                if vals:
+                    global_max = max(global_max, max(vals))
+    global_max = max(global_max * 1.1, 2)
+
+    # 3. 准备画图
+    num_params = len(params)
+    angles = np.linspace(0, 2 * math.pi, num_params, endpoint=False).tolist()
+    angles += angles[:1]
+
+    fig, axes = plt.subplots(1, 4, figsize=(32, 8), subplot_kw=dict(polar=True))        # 欲增加图表数量，请修改此处
+    fig.suptitle("多车载具多层视角对比", fontsize=20, y=1.02)
+
+    for idx, level in enumerate(["高手", "一般玩家", "菜鸟","综合"]):
+        ax = axes[idx]
+        ax.set_title(level, fontsize=16, pad=20)
+        for v_name in vehicle_names:
+            if level not in radar_data[v_name]:
+                continue
+            values_dict = radar_data[v_name][level]
+            values = [values_dict.get(p, 0) for p in params]
+            values += values[:1]
+            ax.plot(angles, values, linewidth=2, label=v_name)
+            ax.fill(angles, values, alpha=0.05)
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(params, fontsize=10)
+        ax.set_ylim(0, global_max)
+        # 定义三个区域的参数索引范围
+        categories = [
+            ("机动", 0, 3),   # 前进, 倒车, 小范围机动
+            ("防护", 3, 6),   # 防护面积, 弱点分布, 生存性
+            ("火力", 6, 10)   # 穿深, 装填, 双机响应, 辅助设备
+        ]
+
+        for label, start, end in categories:
+            # 计算该区域中心角度
+            angle_start = angles[start]
+            angle_end = angles[end - 1] if end > start else angles[start]
+            if angle_end < angle_start:
+                angle_end += 2 * np.pi
+            mid_angle = (angle_start + angle_end) / 2
+            # 欲修改文字距离中心的距离，请修改 text_radius 的系数
+            text_radius = global_max * 0.5
+            ax.text(mid_angle, text_radius, label, ha='center', va='center', 
+                    fontsize=14, fontweight='bold', color='grey', alpha=0.6)
+            
+        ax.legend(loc='upper right', bbox_to_anchor=(1.4, 1.1), fontsize=9)
+
+    plt.tight_layout()
+    filename = os.path.join(OUTPUT_DIR, "多车对比_雷达图.png")
+    plt.savefig(filename, dpi=150, bbox_inches='tight')
+    print(f"已生成对比图: {filename}")
+    plt.close()
+
 if __name__ == "__main__":
-    ensure_weights_exist()  # 如果没有就创建
-    weight_data = create_dict()
+    radar_data = load_radar_data()
 
-    # 将权重数据按玩家水平分类存储
-    high_level_weight = {}
-    for param in weight_data["发挥系数"]["高手"]:
-        high_level_weight[param] = {
-            "发挥系数": weight_data["发挥系数"]["高手"][param],
-            "依赖系数": weight_data["依赖系数"]["高手"][param]
-        }
-    middle_level_weight = {}
-    for param in weight_data["发挥系数"]["一般玩家"]:
-        middle_level_weight[param] = {
-            "发挥系数": weight_data["发挥系数"]["一般玩家"][param],
-            "依赖系数": weight_data["依赖系数"]["一般玩家"][param]
-        }
-    low_level_weight = {}
-    for param in weight_data["发挥系数"]["菜鸟"]:
-        low_level_weight[param] = {
-            "发挥系数": weight_data["发挥系数"]["菜鸟"][param],
-            "依赖系数": weight_data["依赖系数"]["菜鸟"][param]
-        }
+    for vehicle_name, vdata in radar_data.items():
+        plot_single_vehicle(vehicle_name, vdata, CORE_PARAMS)
 
-    print_weight_data(weight_data,3)
-    print("\n")
+    if len(radar_data) >= 2:
+        plot_comparison(radar_data, CORE_PARAMS)
 
-    # 计算各层次每个参数的总权重（未归一化）
-    total_weights = {
-        "高手": {},
-        "一般玩家": {},
-        "菜鸟": {}
-    }
-    for param in high_level_weight:
-        f = high_level_weight[param]["发挥系数"]
-        y = high_level_weight[param]["依赖系数"]
-        total_weights["高手"][param] = f * math.sqrt(y)
-    for param in middle_level_weight:
-        f = middle_level_weight[param]["发挥系数"]
-        y = middle_level_weight[param]["依赖系数"]
-        total_weights["一般玩家"][param] = math.sqrt(f * y)
-    for param in low_level_weight:
-        f = low_level_weight[param]["发挥系数"]
-        y = low_level_weight[param]["依赖系数"]
-        total_weights["菜鸟"][param] = y * math.sqrt(f)
-
-    # 归一化
-    normalized_weight = {"高手": {}, "一般玩家": {}, "菜鸟": {}}
-    for level in total_weights:
-        s = sum(total_weights[level].values())
-        for param in total_weights[level]:
-            normalized_weight[level][param] = total_weights[level][param] / s
-
-
-    print("\n总权重：")
-    print_weight_data(normalized_weight, 2)
-
-    ensure_vehicles_exist()
-    vehicles_path = os.path.join(SCRIPT_DIR, 'vehicles_quantified.json')
-    with open(vehicles_path, 'r', encoding='utf-8') as f:
-        vehicle_scores = json.load(f)
-
-    # 计算综合权重（三个层次的几何平均）
-    overall_weight = {}
-    for param in normalized_weight["高手"]:
-        w_high = normalized_weight["高手"][param]
-        w_mid  = normalized_weight["一般玩家"][param]
-        w_low  = normalized_weight["菜鸟"][param]
-        overall_weight[param] = (w_high * w_mid * w_low) ** (1/3)
-
-    # 计算每辆车的雷达图数据
-    radar_data = {}
-    for tank, scores in vehicle_scores.items():
-        radar_data[tank] = {"高手": {}, "一般玩家": {}, "菜鸟": {}, "综合": {}, "加减分": {}}
-
-        # 填充四个层
-        for level in ["高手", "一般玩家", "菜鸟", "综合"]:
-            weights = overall_weight if level == "综合" else normalized_weight[level]
-            for param in weights:
-                if param in scores:
-                    radar_data[tank][level][param] = round(scores[param] * weights[param], 2)
-
-        # 填充加减分项
-        for bonus in ["俯角", "APS", "LWS"]:
-            if bonus in scores:
-                radar_data[tank]["加减分"][bonus] = scores[bonus]
-
-    # 循环结束后保存
-    radar_path = os.path.join(SCRIPT_DIR, 'radar_data.json')
-    with open(radar_path, 'w', encoding='utf-8') as f:
-        json.dump(radar_data, f, ensure_ascii=False, indent=2)
-    print("雷达图数据已生成：", radar_path)
+    print("所有预览图生成完毕！")
