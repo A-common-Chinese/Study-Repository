@@ -138,6 +138,3 @@ By making those weights explicit and separating them from objective tank stats, 
 ## License
 
 This project is provided for educational and community purposes. Feel free to use, modify, and share with attribution.
-```
-
-This README provides a clear, professional overview of your system, making it easy for others (and future you) to understand and use the project.
