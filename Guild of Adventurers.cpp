@@ -2,6 +2,7 @@
 #include<vector>
 #include<string>
 #include<algorithm>
+#include <limits>
 
 
 using namespace std;
@@ -23,30 +24,56 @@ public:
     short id;
 };
 
+
+int getSafeInt(const string& prompt) {
+    int value;
+    string leftover;
+    while (true) {
+        cout << prompt;
+        cin >> value;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "请输入有效的整数！" << endl;
+        } else {
+            // 检查后面是否还跟着非法字符
+            if (cin.peek() != '\n' && cin.peek() != EOF) {
+                cin.ignore(10000, '\n');
+                cout << "输入包含多余字符，请只输入数字！" << endl;
+                continue;
+            }
+            cin.ignore(10000, '\n');
+            return value;
+        }
+    }
+}
+
+const int MAX_MISSIONS = 1000;
+
 int main(){
     vector<Mission> unfishedMission;
-    bool saveSpace[1000] = {};
+    bool saveSpace[MAX_MISSIONS] = {};
     string name;
     int reward,SW,len;
     while (true){
-        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl << "输入数字以操作：";
-        cin >> SW;
+        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl;
+        SW = getSafeInt("输入数字以操作：");
         cout << endl << endl;
         if (SW == 1){
-            cout << "输入数字以发布任务(1)或完成任务(2):";
-            cin >> SW;
+            SW = getSafeInt("输入数字以发布任务(1)或完成任务(2):");
             cout << endl;
             if (SW == 1){
                 cout << "任务名称：";
-                cin >> name;
-                cout << "任务报酬：";
-                cin >> reward;
+                cin.ignore(10000, '\n');
+                getline(cin, name);
+                reward = getSafeInt("任务报酬：");
                 cout << endl;
                 int id = 1;
-                while(id <= 1000 && saveSpace[id - 1]){
+                while(id <= MAX_MISSIONS && saveSpace[id - 1]){
                     id++;
                 }     
-                if (id > 1000){
+                if (id > MAX_MISSIONS){
                     cout << "任务添加失败，任务列表已满" << endl;
                     continue;
                 }
@@ -58,19 +85,19 @@ int main(){
                 }
             }
             else if (SW == 2){
-                len = unfishedMission.size();
                 cout << "输入任务名称或ID（若有重复名称，将会删除第一个）";
                 string input;
                 char val;
-                cin >> input;
+                cin.ignore(10000, '\n');  // 清空到换行符
+                getline(cin, input);
                 int k = 0;
-                for (int i = 0;i < len;i++){
+                for (int i = 0;i < input.length();i++){
                     val = input[i];
                     if (val >= '0' && val <= '9'){
                         k++;
                     }
                 }
-                if (k == len){
+                if (k == static_cast<int>(input.length())){
                     int targetId;
                     targetId = stoi(input);
                     auto it = find_if(unfishedMission.begin(),unfishedMission.end(),
