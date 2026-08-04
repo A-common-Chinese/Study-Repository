@@ -3,6 +3,7 @@
 #include<string>
 #include<algorithm>
 #include <limits>
+#include <fstream>
 
 
 using namespace std;
@@ -24,6 +25,47 @@ public:
     short id;
 };
 
+bool save(vector<Mission>& missions, const string& filename) {
+    ofstream outFile(filename);
+    if (!outFile) {
+        cerr << "无法打开文件进行保存！" << endl;
+        return false;
+    }
+    for (const auto& mission : missions) {
+        outFile << mission.name << "|" << mission.reward << "|" << mission.id << endl;
+    }
+    outFile << "*" << endl;
+    outFile.close();
+    return true;
+}
+vector<Mission> load( const string& filename, bool saveSpace[]) {
+    ifstream inFile(filename);
+    if (inFile) {
+        cout << "检测到已保存文件，已加载任务数据" << endl;
+    }
+    else{  
+        cout << "未检测到已保存文件，已创建新文件" << endl;
+        ofstream newFile(filename);
+        newFile << "*" << endl;
+        newFile.close();
+        inFile.open(filename);
+        }
+    vector<Mission> temp;
+    string line;
+    while (getline(inFile,line) && line != "*") {
+        size_t pos1 = line.find('|');
+        size_t pos2 = line.find('|', pos1 + 1);
+        if (pos1 != string::npos && pos2 != string::npos) {
+            string name = line.substr(0, pos1);
+            int reward = stoi(line.substr(pos1 + 1, pos2 - pos1 - 1));
+            short id = stoi(line.substr(pos2 + 1));
+            temp.emplace_back(name, reward, id);
+            saveSpace[id - 1] = true;
+        }
+    }
+    inFile.close();
+    return temp;
+}
 
 int getSafeInt(const string& prompt) {
     int value;
@@ -56,12 +98,13 @@ int main(){
     bool saveSpace[MAX_MISSIONS] = {};
     string name;
     int reward,SW,len;
+    unfishedMission = load("missions.txt", saveSpace);
     while (true){
         cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl;
         SW = getSafeInt("输入数字以操作：");
         cout << endl << endl;
         if (SW == 1){
-            SW = getSafeInt("输入数字以发布任务(1)或完成任务(2):");
+            SW = getSafeInt("输入数字以发布任务(1)或完成任务(2)或修改任务(3):");
             cout << endl;
             if (SW == 1){
                 cout << "任务名称：";
@@ -126,6 +169,25 @@ int main(){
                     }
                 }
             }
+            else if (SW == 3){
+                int targetId;
+                targetId = getSafeInt("输入任务ID：");
+                auto it = find_if(unfishedMission.begin(),unfishedMission.end(),
+                    [&](const Mission& p) {return p.id == targetId;});
+                if (it != unfishedMission.end()){
+                    cout << "任务名称：" << it->name << "  报酬：" << it->reward << endl;
+                    cout << "输入新的任务名称：";
+                    cin.ignore(10000, '\n');
+                    getline(cin, name);
+                    reward = getSafeInt("输入新的任务报酬：");
+                    it->name = name;
+                    it->reward = reward;
+                    cout << "任务修改成功" << endl;
+                }
+                else{
+                    cout << "未找到任务，请检查输入" << endl;
+                }
+            }
         }
         else if (SW == 2){
             len = unfishedMission.size();
@@ -135,7 +197,18 @@ int main(){
             cout << "所有任务打印完成，总数：" << len << endl << endl;
         }
         else if (SW == 3){
-            break;
+            if (!save(unfishedMission, "missions.txt")) {
+                cerr << "保存失败！是否直接退出？(y/n)" << endl;
+                char choice;
+                cin >> choice;
+                if (choice == 'y' || choice == 'Y') {
+                    break;
+                }
+            }
+            else {
+                cout << "任务已保存" << endl;
+                break;
+            }   
         }
         cout << endl;
     }
