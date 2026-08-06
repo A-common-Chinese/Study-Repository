@@ -100,7 +100,7 @@ int main(){
     int reward,SW1,len;
     unfishedMission = load("missions.txt", saveSpace);
     while (true){
-        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl << "手动保存：4" << endl;
+        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl << "手动保存：4" << endl << "清空任务：5" << endl;
         SW1 = getSafeInt("输入数字以操作：");
         cout << endl << endl;
         if (SW1 == 1){
@@ -243,6 +243,24 @@ int main(){
             else {
                 cout << "任务已保存" << endl;
             }   
+        }
+        else if (SW1 == 5){
+            cout << "是否确认清空所有任务？(y/n)" << endl;
+            char choice;
+            cin >> choice;
+            if (choice == 'y' || choice == 'Y') {
+                cout << "再次确认，是否清空所有任务？(y/n)" << endl;
+                cin >> choice;
+                if (choice == 'y' || choice == 'Y') {   
+                    unfishedMission.clear();
+                    fill(begin(saveSpace), end(saveSpace), false);
+                    cout << "所有任务已清空" << endl;
+                } else {
+                    cout << "清空操作已取消" << endl;
+                }   
+            } else {
+                cout << "清空操作已取消" << endl;
+            }
         }
         else{
             cout << "输入错误，请重新输入" << endl;
