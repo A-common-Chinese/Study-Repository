@@ -97,18 +97,18 @@ int main(){
     vector<Mission> unfishedMission;
     bool saveSpace[MAX_MISSIONS] = {};
     string name;
-    int reward,SW,len;
+    int reward,SW1,len;
     unfishedMission = load("missions.txt", saveSpace);
     while (true){
-        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl;
-        SW = getSafeInt("输入数字以操作：");
+        cout << "任务编辑：1" << endl << "查询现有任务：2" << endl << "退出程序：3" << endl << "手动保存：4" << endl;
+        SW1 = getSafeInt("输入数字以操作：");
         cout << endl << endl;
-        if (SW == 1){
-            SW = getSafeInt("输入数字以发布任务(1)或完成任务(2)或修改任务(3):");
+        if (SW1 == 1){
+            int SW2;
+            SW2 = getSafeInt("输入数字以发布任务(1)或完成任务(2)或修改任务(3):");
             cout << endl;
-            if (SW == 1){
+            if (SW2 == 1){
                 cout << "任务名称：";
-                cin.ignore(10000, '\n');
                 getline(cin, name);
                 reward = getSafeInt("任务报酬：");
                 cout << endl;
@@ -127,11 +127,10 @@ int main(){
                     cout << "任务[" << name << "]发布成功! 任务ID：" << id << endl;
                 }
             }
-            else if (SW == 2){
+            else if (SW2 == 2){
                 cout << "输入任务名称或ID（若有重复名称，将会删除第一个）";
                 string input;
                 char val;
-                cin.ignore(10000, '\n');  // 清空到换行符
                 getline(cin, input);
                 int k = 0;
                 for (int i = 0;i < input.length();i++){
@@ -169,7 +168,7 @@ int main(){
                     }
                 }
             }
-            else if (SW == 3){
+            else if (SW2 == 3){
                 int targetId;
                 targetId = getSafeInt("输入任务ID：");
                 auto it = find_if(unfishedMission.begin(),unfishedMission.end(),
@@ -177,7 +176,6 @@ int main(){
                 if (it != unfishedMission.end()){
                     cout << "任务名称：" << it->name << "  报酬：" << it->reward << endl;
                     cout << "输入新的任务名称：";
-                    cin.ignore(10000, '\n');
                     getline(cin, name);
                     reward = getSafeInt("输入新的任务报酬：");
                     it->name = name;
@@ -189,14 +187,42 @@ int main(){
                 }
             }
         }
-        else if (SW == 2){
-            len = unfishedMission.size();
+        else if (SW1 == 2){
+            int SW2;
+            SW2 = getSafeInt("选择排序方法：1.按ID升序 2.按ID降序 3.按报酬升序 4.按报酬降序 5.按名称排序 :");
+            vector<Mission> temp = unfishedMission;
+            if (SW2 == 1){
+                sort(temp.begin(), temp.end(), [](const Mission& a, const Mission& b) {
+                    return a.id < b.id;
+                });
+            }
+            else if (SW2 == 2){
+                sort(temp.begin(), temp.end(), [](const Mission& a, const Mission& b) {
+                    return a.id > b.id;
+                });
+            }
+            else if (SW2 == 3){
+                sort(temp.begin(), temp.end(), [](const Mission& a, const Mission& b) {
+                    return a.reward < b.reward;
+                });
+            }
+            else if (SW2 == 4){
+                sort(temp.begin(), temp.end(), [](const Mission& a, const Mission& b) {
+                    return a.reward > b.reward;
+                });
+            }
+            else if (SW2 == 5){
+                sort(temp.begin(), temp.end(), [](const Mission& a, const Mission& b) {
+                    return a.name < b.name;
+                });
+            }
+            len = temp.size();
             for(int i = 0;i < len;i++){
-                cout << "任务：" << unfishedMission[i].name << "  报酬：" << unfishedMission[i].reward << "  ID：" << unfishedMission[i].id << endl;
+                cout << "任务：" << temp[i].name << "  报酬：" << temp[i].reward << "  ID：" << temp[i].id << endl;
             }
             cout << "所有任务打印完成，总数：" << len << endl << endl;
         }
-        else if (SW == 3){
+        else if (SW1 == 3){
             if (!save(unfishedMission, "missions.txt")) {
                 cerr << "保存失败！是否直接退出？(y/n)" << endl;
                 char choice;
@@ -209,6 +235,17 @@ int main(){
                 cout << "任务已保存" << endl;
                 break;
             }   
+        }
+        else if (SW1 == 4){
+            if (!save(unfishedMission, "missions.txt")) {
+                cerr << "保存失败！" << endl;
+            }
+            else {
+                cout << "任务已保存" << endl;
+            }   
+        }
+        else{
+            cout << "输入错误，请重新输入" << endl;
         }
         cout << endl;
     }
