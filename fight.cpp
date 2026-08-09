@@ -177,10 +177,12 @@ void endBattle(Player& p1, Player& p2) {
     };
     for (const auto& character : p1.selfCharacter) {
         character->resetStats();
+        character->healSelf(character->getMaxHp() - character->getHp()); // 战斗结束后恢复血量
     }
     for (const auto& character : p2.selfCharacter) {
-        character->resetStats();  
-    } 
+        character->resetStats();
+        character->healSelf(character->getMaxHp() - character->getHp()); // 战斗结束后恢复血量
+    }
     p1.clearCharacters();
     p2.clearCharacters();
 };
@@ -271,6 +273,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 continue;
             }
         }
+        cout << endl; // 分隔两位玩家的回合输出
         while (true) {
             if (!c2->isAlive()) {
                 break;
@@ -308,6 +311,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 continue;
             }
         }
+        cout << endl; // 分隔两位玩家的回合输出
     }
     endBattle(p1, p2);
 };
@@ -339,8 +343,8 @@ int getSafeInt(const string& prompt) {
 int main(){
     Environment stndForest("Forest", 0, 0, 1);
     Environment migcForest("Magic Forest", 5, 2, 1);
-    Warrior arthur("King Arthur", 100, 20, 10, 5);
-    Mage merlin("Merlin", 80, 25, 5, 10);
+    Warrior arthur("King Arthur", 100, 20, 10, 5);  //名称 血量 攻击 防御 治疗
+    Mage merlin("Merlin", 80, 25, 7, 15);
     Mage OPcharacter("God", 1000, 100, 50, 20);
     vector<int> CharacterIDList = {arthur.getId(), merlin.getId(), OPcharacter.getId()};
     vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId()};
@@ -367,7 +371,7 @@ int main(){
     while (true) {
         short battleChoice,chartChoice;
         string playerName;
-        cout << "欢迎来到战斗模拟器！" << endl;
+        cout << "欢迎来到战斗模拟器！" << endl << endl;
 
         cout << "请输入玩家1名称：";
         getline(cin, playerName);
@@ -375,6 +379,7 @@ int main(){
         cout << "请输入玩家2名称：";
         getline(cin, playerName);
         Player p2(playerName);
+        cout << endl << "角色已就绪！" << endl << "玩家1: " << p1.getName() << " vs 玩家2: " << p2.getName() << endl << endl;
 
         bool validChoice;
         while (true) {
@@ -419,7 +424,7 @@ int main(){
             cout << "，攻击力+" << selectedEnv->getAtkPlus() 
                 << "，防御力+" << selectedEnv->getDefPlus();
         }
-        cout << endl;
+        cout << endl << endl;
 
         if (battleChoice == 1) {
             battleOneVSone(p1, p2, *selectedEnv, characterObjects);
