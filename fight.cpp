@@ -147,6 +147,17 @@ public:
     }
 }; 
 
+class Ranger : public Character {
+public:
+    Ranger(string n, int h, int a, int d, int l) : Character(n, h, a, d, l) {}
+    void attack(Character& target) override {   
+        target.takeDamageT1(atk);
+        int temp;
+        temp = atk * 20 / 100;
+        target.takeDamageT1(temp); // 额外伤害为攻击力的20%,但是取整数
+    }
+};
+
 class Mage : public Character {
 public:
     Mage(string n, int h, int a, int d, int l) : Character(n, h, a, d, l) {}
@@ -267,7 +278,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 }
             } else if (actionChoice == 3) {
                 cout << p1.getName() << " 结束了回合。" << endl;
-                p1ActPoint += 3; // 重置行动点
+                p1ActPoint += 3; // 重置行动点,但是保留上回合剩余行动点
                 break; // 结束回合后跳出循环，进入玩家2的回合
             } else {
                 cout << "无效选择，请重新选择。" << endl;
@@ -305,7 +316,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 }
             } else if (actionChoice == 3) {
                 cout << p2.getName() << " 结束了回合。" << endl;
-                p2ActPoint += 3; // 重置行动点
+                p2ActPoint += 3; // 重置行动点,但是保留上回合剩余行动点
                 break; // 结束回合后跳出循环，回到玩家1的回合
             } else {
                 cout << "无效选择，请重新选择。" << endl;
@@ -342,30 +353,46 @@ int getSafeInt(const string& prompt) {
 }
 
 int main(){
-    Environment stndForest("Forest", 0, 0, 1);
+    Environment stndForest("Forest", 0, 0, 2);
     Environment migcForest("Magic Forest", 5, 2, 1);
+    Environment stndDesert("Desert", 1, 0, 3);
+
     Warrior arthur("King Arthur", 100, 20, 10, 5);  //名称 血量 攻击 防御 治疗
+    Warrior lancelot("Sir Lancelot", 90, 22, 8, 6);
+    Warrior guanyu("Guan Yu", 110, 18, 12, 4);
     Mage merlin("Merlin", 80, 25, 7, 15);
-    Mage OPcharacter("God", 1000, 100, 50, 20);
-    vector<int> CharacterIDList = {arthur.getId(), merlin.getId(), OPcharacter.getId()};
-    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId()};
+    Mage GongsunSheng("Ruyun loong", 120, 15, 12, 10);
+    Ranger robin("Robin Hood", 85, 23, 9, 5);
+
+    Mage OPcharacter("God", 1000, 100, 50, 20); // 隐藏彩蛋角色，属性极高
+
+    vector<int> CharacterIDList = {arthur.getId(), lancelot.getId(), guanyu.getId(), merlin.getId(), GongsunSheng.getId(), OPcharacter.getId()};
+    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId()};
     unordered_map<int, string> characterMap = {
         {arthur.getId(), arthur.getName()},
+        {lancelot.getId(), lancelot.getName()},
+        {guanyu.getId(), guanyu.getName()},
         {merlin.getId(), merlin.getName()},
+        {GongsunSheng.getId(), GongsunSheng.getName()},
         {OPcharacter.getId(), OPcharacter.getName()}
     };
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
+        {lancelot.getId(), &lancelot},
+        {guanyu.getId(), &guanyu},
         {merlin.getId(), &merlin},
+        {GongsunSheng.getId(), &GongsunSheng},
         {OPcharacter.getId(), &OPcharacter}
     };
     unordered_map<int, string> environmentMap = {
         {stndForest.getId(), stndForest.getName()},
-        {migcForest.getId(), migcForest.getName()}
+        {migcForest.getId(), migcForest.getName()},
+        {stndDesert.getId(), stndDesert.getName()}
     };
     unordered_map<int, Environment*> environmentObjects = {
         {stndForest.getId(), &stndForest},
-        {migcForest.getId(), &migcForest}
+        {migcForest.getId(), &migcForest},
+        {stndDesert.getId(), &stndDesert}
     };
 
 
@@ -404,7 +431,7 @@ int main(){
             for (int i = 0; i < EnvironmentIDList.size(); ++i) {
                 cout << EnvironmentIDList[i] << ". " << environmentMap[EnvironmentIDList[i]] << " ";
             }
-            enmChoice = getSafeInt("");    //已经存在提升信息，不再单独提示
+            enmChoice = getSafeInt("");    //已经存在提示信息，不再单独提示
             for (int id : EnvironmentIDList) {
                 if (enmChoice == id) {
                     validChoice = true;
