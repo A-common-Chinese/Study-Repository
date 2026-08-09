@@ -208,7 +208,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
     int actPointDemand = env.getActPointdemand();
     cout << p1.getName() << "，请选择你的角色(P1)：" << endl;
     for (const auto& pair : characterObjects) {
-        if (pair.second->getName() != "God") { // GOD为隐藏彩蛋
+        if (pair.second->getName() != "God" && pair.second->getName() != "“God”") { // GOD为隐藏彩蛋
             cout << pair.first << ". " << pair.second->getName() << endl;
         }
     }
@@ -227,7 +227,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
     }
     cout << p2.getName() << "，请选择你的角色(P2)：" << endl;
     for (const auto& pair : characterObjects) {
-        if (pair.second->getName() != "God") { // GOD为隐藏彩蛋，如果玩家直接输入ID选择God，则可以使用隐藏彩蛋
+        if (pair.second->getName() != "God" && pair.second->getName() != "“God”") { // GOD为隐藏彩蛋，如果玩家直接输入ID选择God，则可以使用隐藏彩蛋
             cout << pair.first << ". " << pair.second->getName() << endl;
         }
     }
