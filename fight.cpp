@@ -185,6 +185,7 @@ void endBattle(Player& p1, Player& p2) {
     }
     p1.clearCharacters();
     p2.clearCharacters();
+    cout << endl; // 添加一个空行以分隔战斗结果和下一轮战斗
 };
 
 int getSafeInt(const string& prompt);
@@ -428,6 +429,14 @@ int main(){
 
         if (battleChoice == 1) {
             battleOneVSone(p1, p2, *selectedEnv, characterObjects);
+        }
+        cout << "回合已结束，是否继续游戏？(y/n)：";
+        char continueChoice;
+        cin >> continueChoice;
+        cin.ignore(); // 清除输入缓冲区
+        if (continueChoice != 'N' && continueChoice != 'n') {
+            cout << "感谢游戏！" << endl;
+            return 0;
         }
     }
 }
