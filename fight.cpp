@@ -246,11 +246,11 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
     while (true) {
         int choice = getSafeInt("输入角色ID：");
         auto it = characterObjects.find(choice);
-        if (it != characterObjects.end() && 
-            !it->second->getHideInf() && 
+        if (it != characterObjects.end() &&  
             selectedIDs.find(choice) == selectedIDs.end()) {
             // 有效选择
             selectedIDs.insert(choice);
+            cout << "角色『" << it->second->getName() << "』 选择成功！" << endl;
             return it->second;
         }
         cout << "无效ID或角色已被选择，请重新选择。" << endl;
