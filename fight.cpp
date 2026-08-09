@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 using namespace std;
 
 class Environment {
@@ -225,6 +226,37 @@ void endBattle(Player& p1, Player& p2) {
 };
 
 int getSafeInt(const string& prompt);
+Character* selectCharacter(const string& playerName, const string& roleLabel, unordered_map<int, Character*>& characterObjects, unordered_set<int>& selectedIDs) {
+    cout << playerName << "，请选择" << roleLabel << "：" << endl;
+    // 显示可选列表
+    vector<pair<int, Character*>> available;
+    for (const auto& pair : characterObjects) {
+        int id = pair.first;
+        Character* c = pair.second;
+        if (!c->getHideInf() && selectedIDs.find(id) == selectedIDs.end()) {
+            available.push_back({id, c});
+            cout << id << ". " << c->getName() << endl;
+        }
+    }
+    if (available.empty()) {
+        cout << "没有可用角色！" << endl;
+        return nullptr;
+    }
+
+    while (true) {
+        int choice = getSafeInt("输入角色ID：");
+        auto it = characterObjects.find(choice);
+        if (it != characterObjects.end() && 
+            !it->second->getHideInf() && 
+            selectedIDs.find(choice) == selectedIDs.end()) {
+            // 有效选择
+            selectedIDs.insert(choice);
+            return it->second;
+        }
+        cout << "无效ID或角色已被选择，请重新选择。" << endl;
+    }
+}
+
 void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost);
 void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
     int atkBuff = env.getAtkPlus();
@@ -232,53 +264,20 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
     int p1ActPoint = 3;
     int p2ActPoint = 3;
     int actPointDemand = env.getActPointdemand();
-    cout << p1.getName() << "，请选择你的角色(P1)：" << endl;
-    for (const auto& pair : characterObjects) {
-        if (!pair.second->getHideInf()) { // GOD为隐藏彩蛋
-            cout << pair.first << ". " << pair.second->getName() << endl;
-        }
-    }
-    int choice;
-    Character* c1 = nullptr;
-    while (true) {
-        choice = getSafeInt("输入角色ID：");
-        auto it = characterObjects.find(choice);
-        if (it != characterObjects.end()) {
-            c1 = it->second;
-            c1->loadEnvEff(atkBuff, defBuff);
-            break;
-        }
-        cout << "无效ID，请重新选择。" << endl;
-    }
+    unordered_set<int> selectedIDs;
+
+    Character* c1 = selectCharacter(p1.getName(), "你的角色(P1)", characterObjects, selectedIDs);
+    if (!c1) return;
+    c1->loadEnvEff(atkBuff, defBuff);
     p1.addCharacter(c1);
-    cout << "成功选择角色『" << c1 -> getName() << "』！" << endl;
 
-    cout << endl;
-
-    cout << p2.getName() << "，请选择你的角色(P2)：" << endl;
-    for (const auto& pair : characterObjects) {
-        if (!pair.second->getHideInf()) { // GOD为隐藏彩蛋，如果玩家直接输入ID选择God，则可以使用隐藏彩蛋
-            cout << pair.first << ". " << pair.second->getName() << endl;
-        }
-    }
-    Character* c2 = nullptr;
-    while (true) {
-        choice = getSafeInt("输入角色ID：");
-        auto it = characterObjects.find(choice);
-        if (it != characterObjects.end()) {
-            c2 = it->second;
-            c2->loadEnvEff(atkBuff, defBuff);
-            break;
-        }
-        cout << "无效ID，请重新选择。" << endl;
-    }
+    Character* c2 = selectCharacter(p2.getName(), "你的角色(P2)", characterObjects, selectedIDs);
+    if (!c2) return;
+    c2->loadEnvEff(atkBuff, defBuff);
     p2.addCharacter(c2);
-    cout << "成功选择角色『" << c2 -> getName() << "』！" << endl;
 
     vector<Character*> team1 = {c1};
     vector<Character*> team2 = {c2};
-
-    int actCost = env.getActPointdemand();
 
     // 主战斗循环
     while (true) {
@@ -292,7 +291,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         p1ActPoint += 3; // 每回合+3
         for (auto* self : team1) {
             if (self->isAlive()) {
-                playerTurn(p1, self, team1, team2, p1ActPoint, actCost);
+                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
             }
         }
 
@@ -306,12 +305,75 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         p2ActPoint += 3; // 每回合+3
         for (auto* self : team2) {
             if (self->isAlive()) {
-                playerTurn(p2, self, team2, team1, p2ActPoint, actCost);
+                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
             }
         }
     }
     endBattle(p1, p2);
 };
+
+void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
+    int atkBuff = env.getAtkPlus();
+    int defBuff = env.getDefPlus();
+    int p1ActPoint = 6;
+    int p2ActPoint = 6;
+    int actPointDemand = env.getActPointdemand();
+    int choice;
+    unordered_set<int> selectedIDs;
+    vector<Character*> team1 = {};
+    vector<Character*> team2 = {};
+
+    for (int i = 0; i < 2; ++i) {
+        Character* c = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
+        if (!c) return;
+        c->loadEnvEff(atkBuff, defBuff);
+        p1.addCharacter(c);
+        team1.push_back(c);
+    }
+
+    // P2 选2个角色
+    for (int i = 0; i < 2; ++i) {
+        Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
+        if (!c) return;
+        c->loadEnvEff(atkBuff, defBuff);
+        p2.addCharacter(c);
+        team2.push_back(c);
+    }
+    cout << endl;
+
+    // 主战斗循环
+    while (true) {
+        // 检查胜负
+        bool team1Alive = false, team2Alive = false;
+        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
+        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
+        if (!team1Alive || !team2Alive) break;
+
+        // 玩家1回合：每个存活角色行动一次
+        p1ActPoint += 5; // 每回合+5
+        for (auto* self : team1) {
+            if (self->isAlive()) {
+                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
+            }
+        }
+
+        // 检查胜负
+        team1Alive = false; team2Alive = false;
+        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
+        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
+        if (!team1Alive || !team2Alive) break;
+
+        // 玩家2回合：每个存活角色行动一次
+        p2ActPoint += 5; // 每回合+5
+        for (auto* self : team2) {
+            if (self->isAlive()) {
+                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
+            }
+        }
+    }
+    endBattle(p1, p2);
+}
+
 
 // 单个角色行动（不负责切换角色）
 void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost) {
@@ -526,12 +588,12 @@ int main(){
 
         bool validChoice;
         while (true) {
-            battleChoice = getSafeInt("选择游戏模式：1.『1 vs 1』 2. 『退出游戏』：");
-            if (battleChoice == 2) {
+            battleChoice = getSafeInt("选择游戏模式：1.『1 vs 1』2. 『2 vs 2』 3. 『退出游戏』：");
+            if (battleChoice == 3) {
                 cout << "退出游戏。" << endl;
                 return 0;
             }
-            else if (battleChoice < 1 || battleChoice > 2) {
+            else if (battleChoice < 1 || battleChoice > 3) {
                 cout << "无效选择，请重新选择。" << endl;
             }
             else {
@@ -571,6 +633,9 @@ int main(){
 
         if (battleChoice == 1) {
             battleOneVSone(p1, p2, *selectedEnv, characterObjects);
+        }
+        else if (battleChoice == 2) {
+            battleTwoVStwo(p1, p2, *selectedEnv, characterObjects);
         }
         cout << "回合已结束,是否继续游戏？(y/n)：";
         char continueChoice;
