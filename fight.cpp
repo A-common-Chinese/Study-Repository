@@ -367,23 +367,27 @@ int main(){
 
     Mage OPcharacter("God", 1000, 100, 50, 20); // 隐藏彩蛋角色，属性极高
 
-    vector<int> CharacterIDList = {arthur.getId(), lancelot.getId(), guanyu.getId(), merlin.getId(), GongsunSheng.getId(), OPcharacter.getId()};
+    vector<int> CharacterIDList = {arthur.getId(), lancelot.getId(), guanyu.getId(), merlin.getId(), GongsunSheng.getId(), fakeOPcharacter.getId(),robin.getId(), OPcharacter.getId()};
     vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId()};
     unordered_map<int, string> characterMap = {
         {arthur.getId(), arthur.getName()},
         {lancelot.getId(), lancelot.getName()},
         {guanyu.getId(), guanyu.getName()},
         {merlin.getId(), merlin.getName()},
+        {fakeOPcharacter.getId(), fakeOPcharacter.getName()},
         {GongsunSheng.getId(), GongsunSheng.getName()},
-        {OPcharacter.getId(), OPcharacter.getName()}
+        {OPcharacter.getId(), OPcharacter.getName()},
+        {robin.getId(), robin.getName()}
     };
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
         {lancelot.getId(), &lancelot},
         {guanyu.getId(), &guanyu},
         {merlin.getId(), &merlin},
+        {fakeOPcharacter.getId(), &fakeOPcharacter},
         {GongsunSheng.getId(), &GongsunSheng},
-        {OPcharacter.getId(), &OPcharacter}
+        {OPcharacter.getId(), &OPcharacter},
+        {robin.getId(), &robin}
     };
     unordered_map<int, string> environmentMap = {
         {stndForest.getId(), stndForest.getName()},
