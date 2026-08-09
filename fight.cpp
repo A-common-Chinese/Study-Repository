@@ -360,6 +360,7 @@ int main(){
     Warrior arthur("King Arthur", 100, 20, 10, 5);  //名称 血量 攻击 防御 治疗
     Warrior lancelot("Sir Lancelot", 90, 22, 8, 6);
     Warrior guanyu("Guan Yu", 110, 18, 12, 4);
+    Mage fakeOPcharacter("“God”", 100, 10, 15, -2); // 隐藏坑爹角色，属性极垃
     Mage merlin("Merlin", 80, 25, 7, 15);
     Mage GongsunSheng("Ruyun loong", 120, 15, 12, 10);
     Ranger robin("Robin Hood", 85, 23, 9, 5);
