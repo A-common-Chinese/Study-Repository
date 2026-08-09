@@ -289,7 +289,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家1回合：每个存活角色行动一次
-        int p1ActPoint += 3; // 每回合+3
+        p1ActPoint += 3; // 每回合+3
         for (auto* self : team1) {
             if (self->isAlive()) {
                 playerTurn(p1, self, team1, team2, p1ActPoint, actCost);
@@ -303,7 +303,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家2回合：每个存活角色行动一次
-        int p2ActPoint += 3; // 每回合+3
+        p2ActPoint += 3; // 每回合+3
         for (auto* self : team2) {
             if (self->isAlive()) {
                 playerTurn(p2, self, team2, team1, p2ActPoint, actCost);
@@ -314,12 +314,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
 };
 
 // 单个角色行动（不负责切换角色）
-void playerTurn(Player& player, 
-                Character* self, 
-                vector<Character*>& allies, 
-                vector<Character*>& enemies, 
-                int& actPoint, 
-                int actCost) {
+void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost) {
     if (!self->isAlive()) return;
 
     cout << "\n" << player.getName() << " 的 " << self->getName() << " 行动中！" << endl;
