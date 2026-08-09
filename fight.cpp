@@ -430,11 +430,13 @@ int main(){
         if (battleChoice == 1) {
             battleOneVSone(p1, p2, *selectedEnv, characterObjects);
         }
-        cout << "回合已结束，是否继续游戏？(y/n)：";
+        cout << "回合已结束游戏？(y/n)：";
         char continueChoice;
         cin >> continueChoice;
         cin.ignore(); // 清除输入缓冲区
-        if (continueChoice != 'N' && continueChoice != 'n') {
+        if (continueChoice == 'y' || continueChoice == 'Y') {
+            continue; // 进入下一轮
+        } else {
             cout << "感谢游戏！" << endl;
             return 0;
         }
