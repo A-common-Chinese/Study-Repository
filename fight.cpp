@@ -189,8 +189,8 @@ int getSafeInt(const string& prompt);
 void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
     int atkBuff = env.getAtkPlus();
     int defBuff = env.getDefPlus();
-    int p1ActPoint = 10;
-    int p2ActPoint = 10;
+    int p1ActPoint = 3;
+    int p2ActPoint = 3;
     int actPointDemand = env.getActPointdemand();
     cout << p1.getName() << "，请选择你的角色(P1)：" << endl;
     for (const auto& pair : characterObjects) {
@@ -264,7 +264,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 }
             } else if (actionChoice == 3) {
                 cout << p1.getName() << " 结束了回合。" << endl;
-                p1ActPoint += 10; // 重置行动点
+                p1ActPoint += 3; // 重置行动点
                 break; // 结束回合后跳出循环，进入玩家2的回合
             } else {
                 cout << "无效选择，请重新选择。" << endl;
@@ -301,7 +301,7 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
                 }
             } else if (actionChoice == 3) {
                 cout << p2.getName() << " 结束了回合。" << endl;
-                p2ActPoint += 10; // 重置行动点
+                p2ActPoint += 3; // 重置行动点
                 break; // 结束回合后跳出循环，回到玩家1的回合
             } else {
                 cout << "无效选择，请重新选择。" << endl;
