@@ -318,11 +318,12 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
                     continue; // 继续下一轮
                 }
             }
-            else{
-                cout << "剩余行动点: " << p1ActPoint << " |将被保留至下一轮" << endl;
-                p1ActPoint += type * actPointDemand; // 每回合+AP
-                break;
+            if (p1ActPoint < actPointDemand && hasAlive(team1)){
+                cout << "行动点不足！ ";
             }
+            cout << "剩余行动点: " << p1ActPoint << " |将被保留至下一轮" << endl;
+            p1ActPoint += type * actPointDemand; // 每回合+AP
+            break;
         }
         // 检查胜负
         team1Alive = false; team2Alive = false;
@@ -348,11 +349,12 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
                     continue; // 继续下一轮
                 }
             }
-            else{
-                cout << "剩余行动点: " << p2ActPoint << " |将被保留至下一轮" << endl;
-                p2ActPoint += type * actPointDemand; // 每回合+AP
-                break;
+            if (p2ActPoint < actPointDemand && hasAlive(team2)){
+                cout << "行动点不足！ ";
             }
+            cout << "剩余行动点: " << p2ActPoint << " |将被保留至下一轮" << endl;
+            p2ActPoint += type * actPointDemand; // 每回合+AP
+            break;
         }
     }
     endBattle(p1, p2);
