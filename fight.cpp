@@ -594,23 +594,7 @@ int main(){
     President maga("Trump", 1500, 30, 60, 14, true);
     Ranger rangers("75th Ranger Regiment", 500, 300, 70, 30, true);
 
-    vector<int> CharacterIDList = {arthur.getId(), lancelot.getId(), guanyu.getId(), merlin.getId(), GongsunSheng.getId(), fakeOPcharacter.getId(),robin.getId(), OPcharacter.getId()};
     vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId()};
-    unordered_map<int, string> characterMap = {
-        {arthur.getId(), arthur.getName()},
-        {lancelot.getId(), lancelot.getName()},
-        {guanyu.getId(), guanyu.getName()},
-        {merlin.getId(), merlin.getName()},
-        {fakeOPcharacter.getId(), fakeOPcharacter.getName()},
-        {GongsunSheng.getId(), GongsunSheng.getName()},
-        {OPcharacter.getId(), OPcharacter.getName()},
-        {robin.getId(), robin.getName()},
-        {jinke.getId(),jinke.getName()},
-        {saberArthur.getId(),saberArthur.getName()},
-        {theDesertFox.getId(),theDesertFox.getName()},
-        {maga.getId(),maga.getName()},
-        {rangers.getId(),rangers.getName()}
-    };
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
         {lancelot.getId(), &lancelot},
