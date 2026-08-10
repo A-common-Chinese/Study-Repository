@@ -202,6 +202,13 @@ public:
     }
 };
 
+bool hasAlive(const vector<Character*>& team) {
+    for (auto* c : team) {
+        if (c->isAlive()) return true;
+    }
+    return false;
+}
+
 void endBattle(Player& p1, Player& p2) {
     cout << "战斗结束！" << endl;
     cout << p1.getName() << "的角色：" << endl;
@@ -258,72 +265,17 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
 }
 
 void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost);
-void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
+void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects, short type) {
     int atkBuff = env.getAtkPlus();
     int defBuff = env.getDefPlus();
-    int p1ActPoint = 3;
-    int p2ActPoint = 3;
+    int p1ActPoint = type * 2; //初始化AP
+    int p2ActPoint = type * 2;
     int actPointDemand = env.getActPointdemand();
-    unordered_set<int> selectedIDs;
-
-    Character* c1 = selectCharacter(p1.getName(), "你的角色(P1)", characterObjects, selectedIDs);
-    if (!c1) return;
-    c1->loadEnvEff(atkBuff, defBuff);
-    p1.addCharacter(c1);
-
-    Character* c2 = selectCharacter(p2.getName(), "你的角色(P2)", characterObjects, selectedIDs);
-    if (!c2) return;
-    c2->loadEnvEff(atkBuff, defBuff);
-    p2.addCharacter(c2);
-
-    vector<Character*> team1 = {c1};
-    vector<Character*> team2 = {c2};
-
-    // 主战斗循环
-    while (true) {
-        // 检查胜负
-        bool team1Alive = false, team2Alive = false;
-        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
-        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
-        if (!team1Alive || !team2Alive) break;
-
-        // 玩家1回合：每个存活角色行动一次
-        for (auto* self : team1) {
-            if (self->isAlive()) {
-                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
-            }
-        }
-        p1ActPoint += 3; // 每回合+3
-
-        // 检查胜负
-        team1Alive = false; team2Alive = false;
-        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
-        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
-        if (!team1Alive || !team2Alive) break;
-
-        // 玩家2回合：每个存活角色行动一次
-        for (auto* self : team2) {
-            if (self->isAlive()) {
-                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
-            }
-        }
-        p2ActPoint += 3; // 每回合+3
-    }
-    endBattle(p1, p2);
-};
-
-void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
-    int atkBuff = env.getAtkPlus();
-    int defBuff = env.getDefPlus();
-    int p1ActPoint = 4;
-    int p2ActPoint = 4;
-    int actPointDemand = env.getActPointdemand();
-    int choice;
     unordered_set<int> selectedIDs;
     vector<Character*> team1 = {};
     vector<Character*> team2 = {};
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < type; ++i) {
         Character* c = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
         if (!c) return;
         c->loadEnvEff(atkBuff, defBuff);
@@ -331,7 +283,7 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         team1.push_back(c);
     }
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < type; ++i) {
         Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
         if (!c) return;
         c->loadEnvEff(atkBuff, defBuff);
@@ -349,13 +301,29 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家1回合：每个存活角色行动一次
-        for (auto* self : team1) {
-            if (self->isAlive()) {
-                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
+        while (true){
+            for (auto* self : team1) {
+                if (self->isAlive()) {
+                    playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
+                }
+            }
+
+            if (p1ActPoint >= actPointDemand + 1 && hasAlive(team1)) {
+                cout << "剩余行动点: " << p1ActPoint << "，是否消耗1点再开一轮？(y/n) ";
+                char choice;
+                cin >> choice;
+                cin.ignore(); // 清空缓冲区
+                if (choice == 'y' || choice == 'Y') {
+                    p1ActPoint -= 1;
+                    continue; // 继续下一轮
+                }
+            }
+            else{
+                cout << "剩余行动点: " << p1ActPoint << " |将被保留至下一轮" << endl;
+                p1ActPoint += type * actPointDemand; // 每回合+AP
+                break;
             }
         }
-        p1ActPoint += 5; // 每回合+5
-
         // 检查胜负
         team1Alive = false; team2Alive = false;
         for (auto* c : team1) if (c->isAlive()) team1Alive = true;
@@ -363,190 +331,111 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家2回合：每个存活角色行动一次
-        for (auto* self : team2) {
-            if (self->isAlive()) {
-                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
+        while (true){
+            for (auto* self : team2) {
+                if (self->isAlive()) {
+                    playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
+                }
+            }
+
+            if (p2ActPoint >= actPointDemand + 1 && hasAlive(team2)) {
+                cout << "剩余行动点: " << p2ActPoint << "，是否消耗1点再开一轮？(y/n) ";
+                char choice;
+                cin >> choice;
+                cin.ignore(); // 清空缓冲区
+                if (choice == 'y' || choice == 'Y') {
+                    p2ActPoint -= 1;
+                    continue; // 继续下一轮
+                }
+            }
+            else{
+                cout << "剩余行动点: " << p2ActPoint << " |将被保留至下一轮" << endl;
+                p2ActPoint += type * actPointDemand; // 每回合+AP
+                break;
             }
         }
-        p2ActPoint += 5; // 每回合+5
     }
     endBattle(p1, p2);
 }
 
-void battleThreeVSthree(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
-    int atkBuff = env.getAtkPlus();
-    int defBuff = env.getDefPlus();
-    int p1ActPoint = 6;
-    int p2ActPoint = 6;
-    int actPointDemand = env.getActPointdemand();
-    int choice;
-    unordered_set<int> selectedIDs;
-    vector<Character*> team1 = {};
-    vector<Character*> team2 = {};
-
-    for (int i = 0; i < 3; ++i) {
-        Character* c = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
-        if (!c) return;
-        c->loadEnvEff(atkBuff, defBuff);
-        p1.addCharacter(c);
-        team1.push_back(c);
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
-        if (!c) return;
-        c->loadEnvEff(atkBuff, defBuff);
-        p2.addCharacter(c);
-        team2.push_back(c);
-    }
-    cout << endl;
-
-    // 主战斗循环
-    while (true) {
-        // 检查胜负
-        bool team1Alive = false, team2Alive = false;
-        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
-        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
-        if (!team1Alive || !team2Alive) break;
-
-        // 玩家1回合：每个存活角色行动一次
-        for (auto* self : team1) {
-            if (self->isAlive()) {
-                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
-            }
-        }
-        p1ActPoint += 6; // 每回合+6
-
-        // 检查胜负
-        team1Alive = false; team2Alive = false;
-        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
-        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
-        if (!team1Alive || !team2Alive) break;
-
-        // 玩家2回合：每个存活角色行动一次
-        for (auto* self : team2) {
-            if (self->isAlive()) {
-                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
-            }
-        }
-        p2ActPoint += 6; // 每回合+6
-    }
-    endBattle(p1, p2);
-}
-
-// 单个角色行动（不负责切换角色）
-void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost) {
+void playerTurn(Player& player, Character* self, vector<Character*>& allies,
+                vector<Character*>& enemies, int& actPoint, int actCost) {
     if (!self->isAlive()) return;
 
     cout << "\n" << player.getName() << " 的 " << self->getName() << " 行动中！" << endl;
+    cout << "当前行动点: " << actPoint << endl;
 
-    while (true) {
-        cout << "当前行动点: " << actPoint << endl;
-        int choice = getSafeInt("选择行动: 1. 攻击 2. 治疗自己 3. 治疗队友 4. 跳过该角色 5. 结束该角色行动");
+    int choice = getSafeInt("选择行动: 1. 攻击 2. 治疗自己 3. 治疗队友 4. 跳过");
 
-        if (choice == 1) {
-            // 攻击
-            if (actPoint < actCost) {
-                cout << "行动点不足，无法攻击。" << endl;
-                continue;
-            }
-
-            vector<Character*> aliveEnemies;
-            for (auto* e : enemies) {
-                if (e->isAlive()) aliveEnemies.push_back(e);
-            }
-            if (aliveEnemies.empty()) {
-                cout << "没有可攻击的敌人！" << endl;
-                continue;
-            }
-
-            cout << "选择攻击目标：" << endl;
-            for (size_t i = 0; i < aliveEnemies.size(); ++i) {
-                cout << i + 1 << ". " << aliveEnemies[i]->getName() 
-                     << " (HP: " << aliveEnemies[i]->getHp() << "/" << aliveEnemies[i]->getMaxHp() << ")" << endl;
-            }
-            int targetChoice = getSafeInt("输入目标编号：");
-            if (targetChoice < 1 || targetChoice > static_cast<int>(aliveEnemies.size())) {
-                cout << "无效选择。" << endl;
-                continue;
-            }
-            Character* target = aliveEnemies[targetChoice - 1];
-
-            self->attack(*target);
-            actPoint -= actCost;
-            cout << self->getName() << " 攻击了 " << target->getName() << "!" << endl;
-            cout << target->getName() << " 的剩余HP: " << target->getHp() << "/" << target->getMaxHp() << endl;
-
-            if (!target->isAlive()) {
-                cout << target->getName() << " 被击败了！" << endl;
-            }
-            // 不 break，允许继续行动
-
-        } else if (choice == 2) {
-            // 治疗自己
-            if (actPoint < actCost) {
-                cout << "行动点不足，无法治疗。" << endl;
-                continue;
-            }
-            self->healSelf(self->getHealAmount());
-            actPoint -= actCost;
-            cout << self->getName() << " 治疗了自己 " << self->getHealAmount() << " 点 HP！" << endl;
-            cout << self->getName() << " 的剩余HP: " << self->getHp() << "/" << self->getMaxHp() << endl;
-            // 不 break，允许继续行动
-
-        } else if (choice == 3) {
-            // 治疗队友
-            if (actPoint < actCost) {
-                cout << "行动点不足，无法治疗。" << endl;
-                continue;
-            }
-            vector<Character*> aliveAllies;
-            for (auto* a : allies) {
-                if (a->isAlive() && a != self) aliveAllies.push_back(a);
-            }
-            if (aliveAllies.empty()) {
-                cout << "没有需要治疗的队友！" << endl;
-                continue;
-            }
-
-            cout << "选择治疗目标：" << endl;
-            for (size_t i = 0; i < aliveAllies.size(); ++i) {
-                cout << i + 1 << ". " << aliveAllies[i]->getName() 
-                     << " (HP: " << aliveAllies[i]->getHp() << "/" << aliveAllies[i]->getMaxHp() << ")" << endl;
-            }
-            int targetChoice = getSafeInt("输入目标编号：");
-            if (targetChoice < 1 || targetChoice > static_cast<int>(aliveAllies.size())) {
-                cout << "无效选择。" << endl;
-                continue;
-            }
-            Character* target = aliveAllies[targetChoice - 1];
-
-            self->healOneAlly(*target, self->getHealAmount());
-            actPoint -= actCost;
-            cout << self->getName() << " 治疗了 " << target->getName() << " " << self->getHealAmount() << " 点 HP！" << endl;
-            cout << target->getName() << " 的剩余HP: " << target->getHp() << "/" << target->getMaxHp() << endl;
-            // 不 break，允许继续行动
-
-        } else if (choice == 4) {
-            // 跳过该角色（结束当前角色行动）
-            cout << self->getName() << " 跳过行动。" << endl;
-            break;
-
-        } else if (choice == 5) {
-            // 结束该角色行动
-            cout << self->getName() << " 结束行动。" << endl;
-            break;
-
-        } else {
-            cout << "无效选择，请重新输入。" << endl;
-            continue;
-        }
-
-        // 检查行动点是否足够下一次行动，若不足则自动结束该角色行动
+    if (choice == 1) {
+        // --- 攻击（只能打前排） ---
         if (actPoint < actCost) {
-            cout << "行动点不足，无法继续行动。" << endl;
-            break;
+            cout << "行动点不足，无法攻击。" << endl;
+            return;
         }
+        // 找敌方第一个存活角色（前排）
+        Character* target = nullptr;
+        for (auto* e : enemies) {
+            if (e->isAlive()) {
+                target = e;
+                break;
+            }
+        }
+        if (!target) {
+            cout << "没有可攻击的敌人！" << endl;
+            return;
+        }
+        self->attack(*target);
+        actPoint -= actCost;
+        cout << self->getName() << " 攻击了 " << target->getName() << "!" << endl;
+        cout << target->getName() << " 的剩余HP: " << target->getHp() << "/" << target->getMaxHp() << endl;
+        if (!target->isAlive()) {
+            cout << target->getName() << " 被击败了！" << endl;
+        }
+    } else if (choice == 2) {
+        // --- 治疗自己 ---
+        if (actPoint < actCost) {
+            cout << "行动点不足，无法治疗。" << endl;
+            return;
+        }
+        self->healSelf(self->getHealAmount());
+        actPoint -= actCost;
+        cout << self->getName() << " 治疗了自己 " << self->getHealAmount() << " 点 HP！" << endl;
+        cout << self->getName() << " 的剩余HP: " << self->getHp() << "/" << self->getMaxHp() << endl;
+    } else if (choice == 3) {
+        // --- 治疗队友 ---
+        if (actPoint < actCost) {
+            cout << "行动点不足，无法治疗。" << endl;
+            return;
+        }
+        // 列出存活的队友（不包括自己）
+        vector<Character*> aliveAllies;
+        for (auto* a : allies) {
+            if (a->isAlive() && a != self) aliveAllies.push_back(a);
+        }
+        if (aliveAllies.empty()) {
+            cout << "没有需要治疗的队友！" << endl;
+            return;
+        }
+        cout << "选择治疗目标：" << endl;
+        for (size_t i = 0; i < aliveAllies.size(); ++i) {
+            cout << i + 1 << ". " << aliveAllies[i]->getName()
+                 << " (HP: " << aliveAllies[i]->getHp() << "/" << aliveAllies[i]->getMaxHp() << ")" << endl;
+        }
+        int targetChoice = getSafeInt("输入目标编号：");
+        if (targetChoice < 1 || targetChoice > static_cast<int>(aliveAllies.size())) {
+            cout << "无效选择。" << endl;
+            return;
+        }
+        Character* target = aliveAllies[targetChoice - 1];
+        self->healOneAlly(*target, self->getHealAmount());
+        actPoint -= actCost;
+        cout << self->getName() << " 治疗了 " << target->getName() << " " << self->getHealAmount() << " 点 HP！" << endl;
+        cout << target->getName() << " 的剩余HP: " << target->getHp() << "/" << target->getMaxHp() << endl;
+    } else if (choice == 4) {
+        cout << self->getName() << " 跳过行动。" << endl;
+    } else {
+        cout << "无效选择。" << endl;
     }
 }
 
@@ -680,16 +569,8 @@ int main(){
         }
         cout << endl << endl;
 
-        if (battleChoice == 1) {
-            battleOneVSone(p1, p2, *selectedEnv, characterObjects);
-        }
-        else if (battleChoice == 2) {
-            battleTwoVStwo(p1, p2, *selectedEnv, characterObjects);
-        }
-        else if (battleChoice == 3) {
-            battleThreeVSthree(p1, p2, *selectedEnv, characterObjects);
+        battleNvsN(p1, p2, *selectedEnv, characterObjects, battleChoice);
 
-        }
         cout << "回合已结束,是否继续游戏？(y/n)：";
         char continueChoice;
         cin >> continueChoice;
