@@ -658,7 +658,7 @@ int main(){
                 cout << "退出游戏。" << endl;
                 return 0;
             }
-            else if (battleChoice < 1 || battleChoice > 3) {
+            else if (battleChoice < 1 || battleChoice > 4) {
                 cout << "无效选择，请重新选择。" << endl;
             }
             else {
