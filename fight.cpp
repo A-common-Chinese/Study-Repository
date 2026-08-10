@@ -242,7 +242,7 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
         Character* c = pair.second;
         if (!c->getHideInf() && selectedIDs.find(id) == selectedIDs.end()) {
             available.push_back({id, c});
-            cout << id << ". " << c->getName() << endl;
+            cout << id << ". " << c->getName() << "|攻击：" << c->getAtk() << " 防御：" << c->getDef << "血量：" << c->getMaxHp << "治疗：" << c->getHealAmount << endl;
         }
     }
     if (available.empty()) {
