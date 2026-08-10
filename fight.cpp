@@ -288,12 +288,12 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家1回合：每个存活角色行动一次
-        p1ActPoint += 3; // 每回合+3
         for (auto* self : team1) {
             if (self->isAlive()) {
                 playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
             }
         }
+        p1ActPoint += 3; // 每回合+3
 
         // 检查胜负
         team1Alive = false; team2Alive = false;
@@ -302,12 +302,12 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家2回合：每个存活角色行动一次
-        p2ActPoint += 3; // 每回合+3
         for (auto* self : team2) {
             if (self->isAlive()) {
                 playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
             }
         }
+        p2ActPoint += 3; // 每回合+3
     }
     endBattle(p1, p2);
 };
@@ -315,8 +315,8 @@ void battleOneVSone(Player& p1, Player& p2, Environment& env, unordered_map<int,
 void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
     int atkBuff = env.getAtkPlus();
     int defBuff = env.getDefPlus();
-    int p1ActPoint = 6;
-    int p2ActPoint = 6;
+    int p1ActPoint = 4;
+    int p2ActPoint = 4;
     int actPointDemand = env.getActPointdemand();
     int choice;
     unordered_set<int> selectedIDs;
@@ -331,7 +331,6 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         team1.push_back(c);
     }
 
-    // P2 选2个角色
     for (int i = 0; i < 2; ++i) {
         Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
         if (!c) return;
@@ -350,12 +349,12 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家1回合：每个存活角色行动一次
-        p1ActPoint += 5; // 每回合+5
         for (auto* self : team1) {
             if (self->isAlive()) {
                 playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
             }
         }
+        p1ActPoint += 5; // 每回合+5
 
         // 检查胜负
         team1Alive = false; team2Alive = false;
@@ -364,16 +363,76 @@ void battleTwoVStwo(Player& p1, Player& p2, Environment& env, unordered_map<int,
         if (!team1Alive || !team2Alive) break;
 
         // 玩家2回合：每个存活角色行动一次
-        p2ActPoint += 5; // 每回合+5
         for (auto* self : team2) {
             if (self->isAlive()) {
                 playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
             }
         }
+        p2ActPoint += 5; // 每回合+5
     }
     endBattle(p1, p2);
 }
 
+void battleThreeVSthree(Player& p1, Player& p2, Environment& env, unordered_map<int, Character*>& characterObjects) {
+    int atkBuff = env.getAtkPlus();
+    int defBuff = env.getDefPlus();
+    int p1ActPoint = 6;
+    int p2ActPoint = 6;
+    int actPointDemand = env.getActPointdemand();
+    int choice;
+    unordered_set<int> selectedIDs;
+    vector<Character*> team1 = {};
+    vector<Character*> team2 = {};
+
+    for (int i = 0; i < 3; ++i) {
+        Character* c = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
+        if (!c) return;
+        c->loadEnvEff(atkBuff, defBuff);
+        p1.addCharacter(c);
+        team1.push_back(c);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
+        if (!c) return;
+        c->loadEnvEff(atkBuff, defBuff);
+        p2.addCharacter(c);
+        team2.push_back(c);
+    }
+    cout << endl;
+
+    // 主战斗循环
+    while (true) {
+        // 检查胜负
+        bool team1Alive = false, team2Alive = false;
+        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
+        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
+        if (!team1Alive || !team2Alive) break;
+
+        // 玩家1回合：每个存活角色行动一次
+        for (auto* self : team1) {
+            if (self->isAlive()) {
+                playerTurn(p1, self, team1, team2, p1ActPoint, actPointDemand);
+            }
+        }
+        p1ActPoint += 6; // 每回合+6
+
+        // 检查胜负
+        team1Alive = false; team2Alive = false;
+        for (auto* c : team1) if (c->isAlive()) team1Alive = true;
+        for (auto* c : team2) if (c->isAlive()) team2Alive = true;
+        if (!team1Alive || !team2Alive) break;
+
+        // 玩家2回合：每个存活角色行动一次
+        for (auto* self : team2) {
+            if (self->isAlive()) {
+                playerTurn(p2, self, team2, team1, p2ActPoint, actPointDemand);
+            }
+        }
+        p2ActPoint += 6; // 每回合+6
+    }
+    endBattle(p1, p2);
+}
 
 // 单个角色行动（不负责切换角色）
 void playerTurn(Player& player, Character* self, vector<Character*>& allies, vector<Character*>& enemies, int& actPoint, int actCost) {
@@ -527,11 +586,13 @@ int main(){
     Mage merlin("Merlin", 75, 28, 7, 12, false);
     Mage GongsunSheng("Ruyun loong", 120, 15, 12, 8, false);
     Ranger robin("Robin Hood", 85, 26, 9, 5, false);
+    Ranger jinke("Jin Ke", 80, 30, 6, 5, false);
 
     Mage OPcharacter("God", 1000, 100, 50, 20, true); // 隐藏彩蛋角色，属性极高
     Warrior saberArthur("Altria Pendragon", 1010, 150, 45, 15, true);
     Ranger theDesertFox("Rommel", 600, 250, 65, 30, true);
     President maga("Trump", 1500, 30, 60, 14, true);
+    Ranger rangers("75th Ranger Regiment", 500, 300, 70, 30, true);
 
     vector<int> CharacterIDList = {arthur.getId(), lancelot.getId(), guanyu.getId(), merlin.getId(), GongsunSheng.getId(), fakeOPcharacter.getId(),robin.getId(), OPcharacter.getId()};
     vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId()};
@@ -544,9 +605,11 @@ int main(){
         {GongsunSheng.getId(), GongsunSheng.getName()},
         {OPcharacter.getId(), OPcharacter.getName()},
         {robin.getId(), robin.getName()},
+        {jinke.getId(),jinke.getName()},
         {saberArthur.getId(),saberArthur.getName()},
         {theDesertFox.getId(),theDesertFox.getName()},
-        {maga.getId(),maga.getName()}
+        {maga.getId(),maga.getName()},
+        {rangers.getId(),rangers.getName()}
     };
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
@@ -557,9 +620,11 @@ int main(){
         {GongsunSheng.getId(), &GongsunSheng},
         {OPcharacter.getId(), &OPcharacter},
         {robin.getId(), &robin},
+        {jinke.getId(),&jinke},
         {saberArthur.getId(),&saberArthur},
         {theDesertFox.getId(),&theDesertFox},
-        {maga.getId(),&maga}
+        {maga.getId(),&maga},
+        {rangers.getId(),&rangers}
     };
     unordered_map<int, string> environmentMap = {
         {stndForest.getId(), stndForest.getName()},
@@ -588,8 +653,8 @@ int main(){
 
         bool validChoice;
         while (true) {
-            battleChoice = getSafeInt("选择游戏模式：1.『1 vs 1』2. 『2 vs 2』 3. 『退出游戏』：");
-            if (battleChoice == 3) {
+            battleChoice = getSafeInt("选择游戏模式：1.『1 vs 1』2. 『2 vs 2』 3. 『3 vs 3』 4. 『退出游戏』：");
+            if (battleChoice == 4) {
                 cout << "退出游戏。" << endl;
                 return 0;
             }
@@ -636,6 +701,10 @@ int main(){
         }
         else if (battleChoice == 2) {
             battleTwoVStwo(p1, p2, *selectedEnv, characterObjects);
+        }
+        else if (battleChoice == 3) {
+            battleThreeVSthree(p1, p2, *selectedEnv, characterObjects);
+
         }
         cout << "回合已结束,是否继续游戏？(y/n)：";
         char continueChoice;
