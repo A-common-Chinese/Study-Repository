@@ -565,7 +565,8 @@ int main(){
         cout << "选择了 " << selectedEnv->getName();
         if (selectedEnv->getAtkPlus() != 0 || selectedEnv->getDefPlus() != 0) {
             cout << "，攻击力+" << selectedEnv->getAtkPlus() 
-                << "，防御力+" << selectedEnv->getDefPlus();
+                << "，防御力+" << selectedEnv->getDefPlus()
+                << ",行动消耗" << selectedEnv->getActPointdemand();
         }
         cout << endl << endl;
 
