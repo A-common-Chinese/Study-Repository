@@ -210,7 +210,7 @@ bool hasAlive(const vector<Character*>& team) {
 }
 
 void endBattle(Player& p1, Player& p2) {
-    cout << "战斗结束！" << endl;
+    cout << endl << "战斗结束！" << endl;
     cout << p1.getName() << "的角色：" << endl;
     for (const auto& character : p1.selfCharacter) {
         cout << character->getName() << " - HP: " << character->getHp() << "/" << character->getMaxHp() << endl;
@@ -563,11 +563,9 @@ int main(){
 
         Environment* selectedEnv = environmentObjects[enmChoice];
         cout << "选择了 " << selectedEnv->getName();
-        if (selectedEnv->getAtkPlus() != 0 || selectedEnv->getDefPlus() != 0) {
-            cout << "，攻击力+" << selectedEnv->getAtkPlus() 
-                << "，防御力+" << selectedEnv->getDefPlus()
-                << ",行动消耗" << selectedEnv->getActPointdemand();
-        }
+        cout << "，攻击力+" << selectedEnv->getAtkPlus() 
+             << "，防御力+" << selectedEnv->getDefPlus()
+             << "，行动消耗" << selectedEnv->getActPointdemand();
         cout << endl << endl;
 
         battleNvsN(p1, p2, *selectedEnv, characterObjects, battleChoice);
