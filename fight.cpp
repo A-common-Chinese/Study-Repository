@@ -153,7 +153,7 @@ class Warrior : public Character {
 public:
     Warrior(string n, int h, int a, int d, int l, bool SW) : Character(n, h, a, d, l,SW) {}
     void attack(Character& target) override {
-        target.takeDamageT1(atk + 5);
+        target.takeDamageT1(atk + 10);
     }
     virtual string getClassName() const override{
         return "Warrior";
@@ -193,7 +193,7 @@ public:
     void aoeAttack (vector<Character*>& enemies) {
         for (auto enemy : enemies){
             if (enemy->isAlive()){
-                enemy->takeDamageT2(atk * 20 / 100); //0.2伤害的AOE攻击，真伤
+                enemy->takeDamageT2(atk * 40 / 100); //0.4伤害的AOE攻击，真伤
             }
         }
     }
@@ -213,7 +213,7 @@ public:
             if (ally->isAlive()) {
                 ally->takeDamageT1(50);
                 if (ally->isAlive()) {
-                    ally->healSelf(hl*10);
+                    ally->healSelf(hl*5);
                 }
                 else{
                     cout << ally->getName() << "死于" << name << "的经济援助" << endl;
@@ -324,21 +324,19 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
     unordered_set<int> selectedIDs;
     vector<Character*> team1 = {};
     vector<Character*> team2 = {};
-
+    const int actPointEachTurn = max(1, type * actPointDemand - 2);  // 确保至少+1
     for (int i = 0; i < type; ++i) {
-        Character* c = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
-        if (!c) return;
-        c->loadEnvEff(atkBuff, defBuff);
-        p1.addCharacter(c);
-        team1.push_back(c);
-    }
+        Character* c1 = selectCharacter(p1.getName(), "第" + to_string(i+1) + "个角色(P1)", characterObjects, selectedIDs);
+        if (!c1) return;
+        c1->loadEnvEff(atkBuff, defBuff);
+        p1.addCharacter(c1);
+        team1.push_back(c1);
 
-    for (int i = 0; i < type; ++i) {
-        Character* c = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
-        if (!c) return;
-        c->loadEnvEff(atkBuff, defBuff);
-        p2.addCharacter(c);
-        team2.push_back(c);
+        Character* c2 = selectCharacter(p2.getName(), "第" + to_string(i+1) + "个角色(P2)", characterObjects, selectedIDs);
+        if (!c2) return;
+        c2->loadEnvEff(atkBuff, defBuff);
+        p2.addCharacter(c2);
+        team2.push_back(c2);
     }
     cout << endl;
 
@@ -372,7 +370,7 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
                 cout << "行动点不足！ ";
             }
             cout << "剩余行动点: " << p1ActPoint << " |将被保留至下一轮" << endl;
-            p1ActPoint += type * actPointDemand; // 每回合+AP
+            p1ActPoint += actPointEachTurn; // 每回合+AP
             break;
         }
         // 检查胜负
@@ -403,7 +401,7 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
                 cout << "行动点不足！ ";
             }
             cout << "剩余行动点: " << p2ActPoint << " |将被保留至下一轮" << endl;
-            p2ActPoint += type * actPointDemand; // 每回合+AP
+            p2ActPoint += actPointEachTurn; // 每回合+AP
             break;
         }
     }
@@ -617,15 +615,15 @@ int main(){
     Mage GongsunSheng("Ruyun loong", 120, 15, 12, 8, false);
     Ranger robin("Robin Hood", 85, 26, 9, 5, false);
     Ranger legolas("Legolas", 80, 30, 6, 5, false);
-    Assassin jinke("Jin Ke", 70, 45, 5, 5, false);
+    Assassin jinke("Jin Ke", 60, 35, 5, 5, false);
     Warrior achilles("Achilles", 100, 28, 8, 4, false);
     Warrior hector("Hector", 140, 16, 16, 3, false);
     Ranger houyi("Hou Yi", 85, 32, 5, 4, false);
     Ranger liguang("Li Guang", 105, 24, 8, 6, false);
     Mage gandalf("Gandalf", 90, 22, 8, 18, false);
     Mage merlinFemale("Morgana", 70, 30, 5, 10, false);
-    Assassin shadow("Shadow", 70, 48, 4, 3, false);
-    Assassin blade("Blade", 85, 38, 6, 5, false);
+    Assassin shadow("Shadow", 55, 40, 4, 3, false);
+    Assassin blade("Blade", 75, 30, 6, 5, false);
     President lincoln("Lincoln", 130, 22, 18, 12, false);
     President fatherOfAmerica("Washington", 100, 34, 12, 8, false);
 
