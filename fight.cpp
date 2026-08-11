@@ -603,7 +603,8 @@ int main(){
     Mage merlin("Merlin", 75, 28, 7, 12, false);
     Mage GongsunSheng("Ruyun loong", 120, 15, 12, 8, false);
     Ranger robin("Robin Hood", 85, 26, 9, 5, false);
-    Ranger jinke("Jin Ke", 80, 30, 6, 5, false);
+    Ranger legolas("Legolas", 80, 30, 6, 5, false);
+    Assassin jinke("Jin Ke", 70, 45, 5, 5, false);
     Warrior achilles("Achilles", 100, 28, 8, 4, false);
     Warrior hector("Hector", 140, 16, 16, 3, false);
     Ranger houyi("Hou Yi", 85, 32, 5, 4, false);
@@ -628,6 +629,7 @@ int main(){
         {OPcharacter.getId(), &OPcharacter},
         {robin.getId(), &robin},
         {jinke.getId(),&jinke},
+        {legolas.getId(),&legolas},
         {achilles.getId(), &achilles},
         {hector.getId(), &hector},
         {houyi.getId(), &houyi},
