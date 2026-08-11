@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -235,9 +236,9 @@ public:
     virtual string getClassName() const override{
         return "Assassin";
     }
-    void strike(Character& target){
+    void strike(Character& target) override{
         cout << name << "对 " << target.getName() << " 发起了突袭！" << endl; 
-        target.takeDamageT1(atk * 1.8);
+        target.takeDamageT1(atk * 15 / 10);
         cout << target.getName() << " 剩余HP： " << "(" << target.getHp() << "/" << target.getMaxHp() << ")" << endl;
     } 
 };
@@ -289,6 +290,11 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
         cout << "没有可用角色！" << endl;
         return nullptr;
     }
+
+    sort(available.begin(), available.end(), 
+        [](const pair<int, Character*>& a, const pair<int, Character*>& b) {
+            return a.first < b.first;
+    });
 
     while (true) {
         int choice = getSafeInt("输入角色ID：");
@@ -595,6 +601,7 @@ int main(){
     Environment stndForest("Forest", 0, 0, 2);
     Environment migcForest("Magic Forest", 5, 2, 1);
     Environment stndDesert("Desert", 1, 0, 3);
+    Environment hell("Hell", 10, -10, 2);
 
     Warrior arthur("King Arthur", 110, 19, 11, 7, false);  //名称 血量 攻击 防御 治疗
     Warrior lancelot("Sir Lancelot", 95, 24, 7, 5, false);
@@ -618,7 +625,7 @@ int main(){
     President maga("Trump", 1500, 30, 60, 14, true);
     Ranger rangers("75th Ranger Regiment", 500, 300, 70, 30, true);
 
-    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId()};
+    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId(), hell.getId()};
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
         {lancelot.getId(), &lancelot},
@@ -644,12 +651,14 @@ int main(){
     unordered_map<int, string> environmentMap = {
         {stndForest.getId(), stndForest.getName()},
         {migcForest.getId(), migcForest.getName()},
-        {stndDesert.getId(), stndDesert.getName()}
+        {stndDesert.getId(), stndDesert.getName()},
+        {hell.getId(), hell.getName()}
     };
     unordered_map<int, Environment*> environmentObjects = {
         {stndForest.getId(), &stndForest},
         {migcForest.getId(), &migcForest},
-        {stndDesert.getId(), &stndDesert}
+        {stndDesert.getId(), &stndDesert},
+        {hell.getId(), &hell}
     };
 
 
