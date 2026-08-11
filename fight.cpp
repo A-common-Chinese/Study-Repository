@@ -601,7 +601,9 @@ int main(){
     Environment stndForest("Forest", 0, 0, 2);
     Environment migcForest("Magic Forest", 5, 2, 1);
     Environment stndDesert("Desert", 1, 0, 3);
+    Environment modernCity("City", 0, 1, 4);
     Environment hell("Hell", 10, -10, 2);
+    Environment heaven("Heaven", -10, 10, 1);
 
     Warrior arthur("King Arthur", 110, 19, 11, 7, false);  //名称 血量 攻击 防御 治疗
     Warrior lancelot("Sir Lancelot", 95, 24, 7, 5, false);
@@ -625,7 +627,7 @@ int main(){
     President maga("Trump", 1500, 30, 60, 14, true);
     Ranger rangers("75th Ranger Regiment", 500, 300, 70, 30, true);
 
-    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId(), hell.getId()};
+    vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId(), hell.getId(), heaven.getId(), modernCity.getId()};
     unordered_map<int, Character*> characterObjects = {
         {arthur.getId(), &arthur},
         {lancelot.getId(), &lancelot},
@@ -652,13 +654,18 @@ int main(){
         {stndForest.getId(), stndForest.getName()},
         {migcForest.getId(), migcForest.getName()},
         {stndDesert.getId(), stndDesert.getName()},
-        {hell.getId(), hell.getName()}
+        {hell.getId(), hell.getName()},
+        {heaven.getId(), heaven.getName()},
+        {modernCity.getId(),modernCity.getName()}
+
     };
     unordered_map<int, Environment*> environmentObjects = {
         {stndForest.getId(), &stndForest},
         {migcForest.getId(), &migcForest},
         {stndDesert.getId(), &stndDesert},
-        {hell.getId(), &hell}
+        {hell.getId(), &hell},
+        {heaven.getId(), &heaven},
+        {modernCity.getId(),&modernCity}
     };
 
 
