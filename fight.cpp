@@ -54,6 +54,7 @@ public:
     virtual string getClassName() const = 0;
     virtual void healAllies (vector<Character*>& allies) {}
     virtual void aoeAttack (vector<Character*> & enemies) {}
+    virtual void strike (Character& enemies) {}
     virtual void takeDamageT1(int damage) {
         if (hp <= 0){
             hp = 0;
@@ -225,6 +226,22 @@ public:
     }
 };
 
+class Assassin : public Character {
+public:
+    Assassin(string n, int h, int a, int d, int l, bool SW) : Character(n, h, a, d, l, SW) {}
+    void attack(Character& target) override {
+        target.takeDamageT1(atk);
+    }
+    virtual string getClassName() const override{
+        return "Assassin";
+    }
+    void strike(Character& target){
+        cout << name << "对 " << target.getName() << " 发起了突袭！" << endl; 
+        target.takeDamageT1(atk * 1.8);
+        cout << target.getName() << " 剩余HP： " << "(" << target.getHp() << "/" << target.getMaxHp() << ")" << endl;
+    } 
+};
+
 bool hasAlive(const vector<Character*>& team) {
     for (auto* c : team) {
         if (c->isAlive()) return true;
@@ -394,6 +411,9 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
     if (self->getClassName() == "Mage" || self->getClassName() == "President"){
         cout << "5. 全体治疗 ";
     }
+    if (self->getClassName() == "Assassin"){
+        cout << "5. 突袭 ";
+    }
     if (self->getClassName() == "Mage"){
         cout << "6. AOE攻击 ";
     }
@@ -473,7 +493,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
     } 
     else if (choice == 5 && (self->getClassName() == "Mage" || self->getClassName() == "President")) {
         // --- 治疗全部队友 ---
-        if (actPoint < actCost) {
+        if (actPoint < actCost + 1) {
             cout << "行动点不足，无法治疗。" << endl;
             return;
         }
@@ -487,8 +507,37 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             return;
         }
         self->healAllies(aliveAllies);
-        actPoint -= actCost;
+        actPoint -= (actCost + 1);
         cout << self->getName() << " 治疗了使用了全体治疗！ 友军全体增加HP！" << endl;
+    }
+    else if (choice == 5 && self->getClassName() == "Assassin") {
+        if (actPoint < actCost + 1) {
+            cout << "行动点不足，无法攻击。" << endl;
+            return;
+        }
+        vector<Character*> aliveEnemies;
+        for (auto* e : enemies) {
+            if (e->isAlive()) aliveEnemies.push_back(e);
+        }
+        if (aliveEnemies.empty()) {
+            cout << "敌人已经全部死亡！" << endl;
+            return;
+        }
+        
+        cout << "选择攻击目标：" << endl;
+        for (size_t i = 0; i < aliveEnemies.size(); ++i){
+            cout << i + 1 << ". " << aliveEnemies[i]->getName()
+                 << " (HP: " << aliveEnemies[i]->getHp() << "/" << aliveEnemies[i]->getMaxHp() << ")" << endl;
+        }
+        int targetChoice;
+        targetChoice = getSafeInt("输入目标编号：");
+        if (targetChoice < 1 || targetChoice > static_cast<int>(aliveEnemies.size())) {
+            cout << "无效选择。" << endl;
+            return;
+        }
+        Character* target = aliveEnemies[targetChoice - 1];
+        self->strike(*target);
+        actPoint -= (actCost + 1);
     }
     else if (choice == 6 && self->getClassName() == "Mage") {
         if (actPoint < actCost) {
@@ -555,6 +604,12 @@ int main(){
     Mage GongsunSheng("Ruyun loong", 120, 15, 12, 8, false);
     Ranger robin("Robin Hood", 85, 26, 9, 5, false);
     Ranger jinke("Jin Ke", 80, 30, 6, 5, false);
+    Warrior achilles("Achilles", 100, 28, 8, 4, false);
+    Warrior hector("Hector", 140, 16, 16, 3, false);
+    Ranger houyi("Hou Yi", 85, 32, 5, 4, false);
+    Ranger liguang("Li Guang", 105, 24, 8, 6, false);
+    Mage gandalf("Gandalf", 90, 22, 8, 18, false);
+    Mage merlinFemale("Morgana", 70, 30, 5, 10, false);
 
     Mage OPcharacter("God", 1000, 100, 50, 20, true); // 隐藏彩蛋角色，属性极高
     Warrior saberArthur("Altria Pendragon", 1010, 150, 45, 15, true);
@@ -573,6 +628,12 @@ int main(){
         {OPcharacter.getId(), &OPcharacter},
         {robin.getId(), &robin},
         {jinke.getId(),&jinke},
+        {achilles.getId(), &achilles},
+        {hector.getId(), &hector},
+        {houyi.getId(), &houyi},
+        {liguang.getId(), &liguang},
+        {gandalf.getId(), &gandalf},
+        {merlinFemale.getId(), &merlinFemale},
         {saberArthur.getId(),&saberArthur},
         {theDesertFox.getId(),&theDesertFox},
         {maga.getId(),&maga},
