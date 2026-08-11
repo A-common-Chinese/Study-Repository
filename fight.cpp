@@ -51,6 +51,9 @@ public:
     Character(string n, int h, int a, int d, int l, bool SW) : name(n), id(chrNextID++), hp(h), maxHp(h), atk(a), def(d), hl(l), pastAtk(a), pastDef(d), isHide(SW) {}
     virtual ~Character() {}
     virtual void attack(Character& target) = 0;
+    virtual string getClassName() const = 0;
+    virtual void healAllies (vector<Character*>& allies) {}
+    virtual void aoeAttack (vector<Character*> & enemies) {}
     virtual void takeDamageT1(int damage) {
         if (hp <= 0){
             hp = 0;
@@ -150,6 +153,9 @@ public:
     void attack(Character& target) override {
         target.takeDamageT1(atk + 5);
     }
+    virtual string getClassName() const override{
+        return "Warrior";
+    }
 }; 
 
 class Ranger : public Character {
@@ -160,6 +166,9 @@ public:
         int temp;
         temp = atk * 20 / 100;
         target.takeDamageT1(temp); // 额外伤害为攻击力的20%,但是取整数,且无法无视防御
+    }
+    virtual string getClassName() const override{
+        return "Ranger";
     }
 };
 
@@ -179,6 +188,16 @@ public:
             }
         }
     }
+    void aoeAttack (vector<Character*>& enemies) {
+        for (auto enemy : enemies){
+            if (enemy->isAlive()){
+                enemy->takeDamageT2(atk * 20 / 100); //0.2伤害的AOE攻击，真伤
+            }
+        }
+    }
+    virtual string getClassName() const override{
+        return "Mage";
+    }
 };
 
 class President : public Character {
@@ -195,10 +214,14 @@ public:
                     ally->healSelf(hl*10);
                 }
                 else{
+                    cout << ally->getName() << "死于" << name << "的经济援助" << endl;
                     ally->takeDamageT1(0);
                 }
             }
         }
+    }
+    virtual string getClassName() const override{
+        return "President";
     }
 };
 
@@ -367,7 +390,15 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
     cout << "\n" << player.getName() << " 的 " << self->getName() << " 行动中！" << endl;
     cout << "当前行动点: " << actPoint << endl;
 
-    int choice = getSafeInt("选择行动: 1. 攻击 2. 治疗自己 3. 治疗队友 4. 跳过");
+    cout << "选择行动: 1. 攻击 2. 治疗自己 3. 治疗队友 4. 跳过 ";
+    if (self->getClassName() == "Mage" || self->getClassName() == "President"){
+        cout << "5. 全体治疗 ";
+    }
+    if (self->getClassName() == "Mage"){
+        cout << "6. AOE攻击 ";
+    }
+    cout << endl;
+    int choice = getSafeInt("输入数字以行动:");
 
     if (choice == 1) {
         // --- 攻击（只能打前排） ---
@@ -394,7 +425,8 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         if (!target->isAlive()) {
             cout << target->getName() << " 被击败了！" << endl;
         }
-    } else if (choice == 2) {
+    }
+    else if (choice == 2) {
         // --- 治疗自己 ---
         if (actPoint < actCost) {
             cout << "行动点不足，无法治疗。" << endl;
@@ -404,7 +436,8 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         actPoint -= actCost;
         cout << self->getName() << " 治疗了自己 " << self->getHealAmount() << " 点 HP！" << endl;
         cout << self->getName() << " 的剩余HP: " << self->getHp() << "/" << self->getMaxHp() << endl;
-    } else if (choice == 3) {
+    }
+    else if (choice == 3) {
         // --- 治疗队友 ---
         if (actPoint < actCost) {
             cout << "行动点不足，无法治疗。" << endl;
@@ -434,9 +467,53 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         actPoint -= actCost;
         cout << self->getName() << " 治疗了 " << target->getName() << " " << self->getHealAmount() << " 点 HP！" << endl;
         cout << target->getName() << " 的剩余HP: " << target->getHp() << "/" << target->getMaxHp() << endl;
-    } else if (choice == 4) {
+    } 
+    else if (choice == 4) {
         cout << self->getName() << " 跳过行动。" << endl;
-    } else {
+    } 
+    else if (choice == 5 && (self->getClassName() == "Mage" || self->getClassName() == "President")) {
+        // --- 治疗全部队友 ---
+        if (actPoint < actCost) {
+            cout << "行动点不足，无法治疗。" << endl;
+            return;
+        }
+
+        vector<Character*> aliveAllies;
+        for (auto* a : allies) {
+            if (a->isAlive() && a != self) aliveAllies.push_back(a);
+        }
+        if (aliveAllies.empty()) {
+            cout << "没有需要治疗的队友！" << endl;
+            return;
+        }
+        self->healAllies(aliveAllies);
+        actPoint -= actCost;
+        cout << self->getName() << " 治疗了使用了全体治疗！ 友军全体增加HP！" << endl;
+    }
+    else if (choice == 6 && self->getClassName() == "Mage") {
+        if (actPoint < actCost) {
+            cout << "行动点不足，无法攻击。" << endl;
+            return;
+        }
+
+        vector<Character*> aliveEnemies;
+        for (auto* e : enemies) {
+            if (e->isAlive()) aliveEnemies.push_back(e);
+        }
+        if (aliveEnemies.empty()) {
+            cout << "敌人已经全部死亡！" << endl;
+            return;
+        }
+        self->aoeAttack(aliveEnemies);
+        actPoint -= actCost;
+        cout << self->getName() << " 使用了范围攻击！" << endl;
+        for (auto* e : aliveEnemies) {
+            if (e->isAlive()) {
+                cout << e->getName() << " 剩余 HP: " << e->getHp() << "/" << e->getMaxHp() << endl;
+            }
+        }   
+    }
+    else {
         cout << "无效选择。" << endl;
     }
 }
