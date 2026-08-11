@@ -339,16 +339,11 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
         team2.push_back(c2);
     }
     cout << endl;
-    bool isFirstTurn = true;
+
     // 主战斗循环
     while (true) {
         // 检查胜负
-        if (!isFirstTurn){
-            cout << "没有作出有效行动！请重新选择！";
 
-        }else{
-            isFirstTurn = false;
-        }
         bool team1Alive = false, team2Alive = false;
         for (auto* c : team1) if (c->isAlive()) team1Alive = true;
         for (auto* c : team2) if (c->isAlive()) team2Alive = true;
@@ -432,8 +427,15 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         cout << "6. AOE攻击 ";
     }
     cout << endl;
-
+    
+    bool isFirstTurn = true;
     while (true){
+        if (!isFirstTurn){
+            cout << "没有作出有效行动！请重新选择！";
+
+        }else{
+            isFirstTurn = false;
+        }
         int choice = getSafeInt("输入数字以行动:");
         bool aSW = false;
         if (choice == 1) {
