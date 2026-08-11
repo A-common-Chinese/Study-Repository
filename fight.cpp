@@ -339,10 +339,16 @@ void battleNvsN(Player& p1, Player& p2, Environment& env, unordered_map<int, Cha
         team2.push_back(c2);
     }
     cout << endl;
-
+    bool isFirstTurn = false;
     // 主战斗循环
     while (true) {
         // 检查胜负
+        if (!isFirstTurn){
+            cout << "没有作出有效行动！请重新选择！";
+
+        }else{
+            isFirstTurn = true;
+        }
         bool team1Alive = false, team2Alive = false;
         for (auto* c : team1) if (c->isAlive()) team1Alive = true;
         for (auto* c : team2) if (c->isAlive()) team2Alive = true;
@@ -434,6 +440,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             // --- 攻击（只能打前排） ---
             if (actPoint < actCost) {
                 cout << "行动点不足，无法攻击。" << endl;
+                continue;
             }
             // 找敌方第一个存活角色（前排）
             Character* target = nullptr;
@@ -445,6 +452,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             }
             if (!target) {
                 cout << "没有可攻击的敌人！" << endl;
+                continue;
             }
             self->attack(*target);
             actPoint -= actCost;
@@ -459,6 +467,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             // --- 治疗自己 ---
             if (actPoint < actCost) {
                 cout << "行动点不足，无法治疗。" << endl;
+                continue;
             }
             self->healSelf(self->getHealAmount());
             actPoint -= actCost;
@@ -470,6 +479,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             // --- 治疗队友 ---
             if (actPoint < actCost) {
                 cout << "行动点不足，无法治疗。" << endl;
+                continue;
             }
             // 列出存活的队友（不包括自己）
             vector<Character*> aliveAllies;
@@ -478,6 +488,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             }
             if (aliveAllies.empty()) {
                 cout << "没有需要治疗的队友！" << endl;
+                continue;
             }
             cout << "选择治疗目标：" << endl;
             for (size_t i = 0; i < aliveAllies.size(); ++i) {
@@ -487,6 +498,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             int targetChoice = getSafeInt("输入目标编号：");
             if (targetChoice < 1 || targetChoice > static_cast<int>(aliveAllies.size())) {
                 cout << "无效选择。" << endl;
+                continue;
             }
             Character* target = aliveAllies[targetChoice - 1];
             self->healOneAlly(*target, self->getHealAmount());
@@ -503,6 +515,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             // --- 治疗全部队友 ---
             if (actPoint < actCost + 1) {
                 cout << "行动点不足，无法治疗。" << endl;
+                continue;
             }
 
             vector<Character*> aliveAllies;
@@ -511,6 +524,7 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             }
             if (aliveAllies.empty()) {
                 cout << "没有需要治疗的队友！" << endl;
+                continue;
             }
             self->healAllies(aliveAllies);
             actPoint -= (actCost + 1);
@@ -520,13 +534,16 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         else if (choice == 5 && self->getClassName() == "Assassin") {
             if (actPoint < actCost + 1) {
                 cout << "行动点不足，无法攻击。" << endl;
+                continue;
             }
+            else{
             vector<Character*> aliveEnemies;
             for (auto* e : enemies) {
                 if (e->isAlive()) aliveEnemies.push_back(e);
             }
             if (aliveEnemies.empty()) {
                 cout << "敌人已经全部死亡！" << endl;
+                continue;
             }
             
             cout << "选择攻击目标：" << endl;
@@ -538,15 +555,18 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             targetChoice = getSafeInt("输入目标编号：");
             if (targetChoice < 1 || targetChoice > static_cast<int>(aliveEnemies.size())) {
                 cout << "无效选择。" << endl;
+                continue;
             }
             Character* target = aliveEnemies[targetChoice - 1];
             self->strike(*target);
             actPoint -= (actCost + 1);
             aSW = true;
+            }
         }
         else if (choice == 6 && self->getClassName() == "Mage") {
             if (actPoint < actCost) {
                 cout << "行动点不足，无法攻击。" << endl;
+                continue;
             }
 
             vector<Character*> aliveEnemies;
@@ -555,15 +575,16 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
             }
             if (aliveEnemies.empty()) {
                 cout << "敌人已经全部死亡！" << endl;
+                continue;
             }
             self->aoeAttack(aliveEnemies);
-            actPoint -= actCost;
             cout << self->getName() << " 使用了范围攻击！" << endl;
             for (auto* e : aliveEnemies) {
                 if (e->isAlive()) {
                     cout << e->getName() << " 剩余 HP: " << e->getHp() << "/" << e->getMaxHp() << endl;
                 }
             }
+            actPoint -= actCost;
             aSW = true;   
         }
         else {
@@ -572,7 +593,6 @@ void playerTurn(Player& player, Character* self, vector<Character*>& allies,
         if (aSW){
             return;
         }
-        cout << "没有作出有效行动！请重新选择！";
     }
 }
 
