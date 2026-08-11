@@ -283,7 +283,6 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
         Character* c = pair.second;
         if (!c->getHideInf() && selectedIDs.find(id) == selectedIDs.end()) {
             available.push_back({id, c});
-            cout << id << ". " << c->getName() << "|职业：" << c->getClassName() <<"|攻击：" << c->getAtk() << " 防御：" << c->getDef() << " 血量：" << c->getMaxHp() << " 治疗：" << c->getHealAmount() << endl;
         }
     }
     if (available.empty()) {
@@ -296,6 +295,11 @@ Character* selectCharacter(const string& playerName, const string& roleLabel, un
             return a.first < b.first;
     });
 
+    for (const auto& pair : available){
+        Character* t = pair.second;
+        cout << t->getId() << ". " << t->getName() << "|职业：" << t->getClassName() <<"|攻击：" << t->getAtk() << " 防御：" << t->getDef() << " 血量：" << t->getMaxHp() << " 治疗：" << t->getHealAmount() << endl;
+
+    }
     while (true) {
         int choice = getSafeInt("输入角色ID：");
         auto it = characterObjects.find(choice);
@@ -670,7 +674,7 @@ int main(){
 
 
     while (true) {
-        short battleChoice,chartChoice;
+        short battleChoice;
         string playerName;
         cout << "欢迎来到战斗模拟器！" << endl << endl;
 
@@ -740,4 +744,4 @@ int main(){
         }
         cout << endl << endl;
     }
-}
+}    
