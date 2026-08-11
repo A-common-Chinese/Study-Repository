@@ -624,12 +624,18 @@ int main(){
     Ranger liguang("Li Guang", 105, 24, 8, 6, false);
     Mage gandalf("Gandalf", 90, 22, 8, 18, false);
     Mage merlinFemale("Morgana", 70, 30, 5, 10, false);
+    Assassin shadow("Shadow", 70, 48, 4, 3, false);
+    Assassin blade("Blade", 85, 38, 6, 5, false);
+    President lincoln("Lincoln", 130, 22, 18, 12, false);
+    President fatherOfAmerica("Washington", 100, 34, 12, 8, false);
 
-    Mage OPcharacter("God", 1000, 100, 50, 20, true); // 隐藏彩蛋角色，属性极高
-    Warrior saberArthur("Altria Pendragon", 1010, 150, 45, 15, true);
-    Ranger theDesertFox("Rommel", 600, 250, 65, 30, true);
-    President maga("Trump", 1500, 30, 60, 14, true);
-    Ranger rangers("75th Ranger Regiment", 500, 300, 70, 30, true);
+
+    Mage OPcharacter("God", 1000, 100, 50, 40, true); // 隐藏彩蛋角色，属性极高
+    Warrior saberArthur("Altria Pendragon", 1010, 150, 45, 25, true);
+    Ranger theDesertFox("Rommel", 600, 250, 65, 35, true);
+    President maga("Trump", 1500, 30, 60, 60, true);
+    Ranger rangers("75th Ranger Regiment", 500, 300, 70, 35, true);
+    Assassin zhuanzhu("Zhuan Zhu", 350, 500, 15, 15, true);
 
     vector<int> EnvironmentIDList = {stndForest.getId(), migcForest.getId(), stndDesert.getId(), hell.getId(), heaven.getId(), modernCity.getId()};
     unordered_map<int, Character*> characterObjects = {
@@ -652,7 +658,12 @@ int main(){
         {saberArthur.getId(),&saberArthur},
         {theDesertFox.getId(),&theDesertFox},
         {maga.getId(),&maga},
-        {rangers.getId(),&rangers}
+        {rangers.getId(),&rangers},
+        {shadow.getId(), &shadow},
+        {blade.getId(), &blade},
+        {lincoln.getId(), &lincoln},
+        {fatherOfAmerica.getId(), &fatherOfAmerica},
+        {zhuanzhu.getId(),&zhuanzhu}
     };
     unordered_map<int, string> environmentMap = {
         {stndForest.getId(), stndForest.getName()},
@@ -744,4 +755,4 @@ int main(){
         }
         cout << endl << endl;
     }
-}    
+}
