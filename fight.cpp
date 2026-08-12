@@ -756,9 +756,23 @@ int main(){
         }
 
         Environment* selectedEnv = environmentObjects[enmChoice];
+        char pOm1,pOm2;
+        if (selectedEnv->getAtkPlus() < 0) {
+            pOm1 = '\0';
+        }
+        else{
+            pOm1 = '+';
+        }
+        if (selectedEnv->getDefPlus() < 0) {
+            pOm2 = '\0';
+        }
+        else{
+            pOm2 = '+';
+        }
+
         cout << "选择了 " << selectedEnv->getName();
-        cout << "，攻击力+" << selectedEnv->getAtkPlus() 
-             << "，防御力+" << selectedEnv->getDefPlus()
+        cout << "，攻击力" << pOm1 << selectedEnv->getAtkPlus() 
+             << "，防御力" << pOm2 << selectedEnv->getDefPlus()
              << "，行动消耗" << selectedEnv->getActPointdemand();
         cout << endl << endl;
 
